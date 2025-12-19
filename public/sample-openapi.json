@@ -1,0 +1,67 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Beehive Demo API",
+    "description": "A sample API to demonstrate Beehive",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.beehive.dev/v1"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Users",
+      "description": "User management"
+    },
+    {
+      "name": "Products",
+      "description": "Product catalog"
+    }
+  ],
+  "paths": {
+    "/users": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "List users",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          }
+        }
+      }
+    }
+  }
+}

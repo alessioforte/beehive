@@ -1,0 +1,25 @@
+"use client";
+
+import { Badge } from "@mantine/core";
+import { getMethodColor } from "@/utils/openapi-helpers";
+
+interface MethodBadgeProps {
+  method: string;
+  size?: "xs" | "sm" | "md" | "lg" | "xl";
+}
+
+export function MethodBadge({ method, size = "sm" }: MethodBadgeProps) {
+  const color = getMethodColor(method);
+
+  return (
+    <Badge
+      color={color}
+      variant="filled"
+      size={size}
+      radius="sm"
+      style={{ fontWeight: 700, minWidth: 70, textAlign: "center" }}
+    >
+      {method.toUpperCase()}
+    </Badge>
+  );
+}
