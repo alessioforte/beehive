@@ -4,6 +4,7 @@ import { Box, Text, Stack, Code, Tabs } from "@mantine/core";
 import { RequestBody, OpenAPISpec, Schema } from "@/types/openapi";
 import { SchemaViewer } from "./SchemaViewer";
 import { extractSchemaExample, formatJson } from "@/utils/openapi-helpers";
+import CodeBox from "./CodeBox";
 
 interface RequestBodySectionProps {
   requestBody: RequestBody;
@@ -92,14 +93,7 @@ function SingleContentType({
       {contentType.length === 1 && <Code>{contentType}</Code>}
 
       {mediaType.schema && (
-        <Box
-          p="md"
-          style={{
-            backgroundColor: "var(--mantine-color-gray-0)",
-            borderRadius: "var(--mantine-radius-md)",
-            border: "1px solid var(--mantine-color-gray-3)",
-          }}
-        >
+        <Box p="md">
           <Text size="xs" fw={600} mb="sm" c="dimmed">
             Schema
           </Text>
@@ -112,7 +106,7 @@ function SingleContentType({
           <Text size="xs" fw={600} mb="xs" c="dimmed">
             Example Request Body
           </Text>
-          <Code block>{formatJson(mediaType.example)}</Code>
+          <CodeBox value={formatJson(mediaType.example)} />
         </Box>
       )}
 
@@ -121,9 +115,9 @@ function SingleContentType({
           <Text size="xs" fw={600} mb="xs" c="dimmed">
             Example Request Body
           </Text>
-          <Code block>
-            {formatJson(extractSchemaExample(mediaType.schema, spec))}
-          </Code>
+          <CodeBox
+            value={formatJson(extractSchemaExample(mediaType.schema, spec))}
+          />
         </Box>
       )}
 
@@ -155,7 +149,7 @@ function SingleContentType({
                         {exampleObj.description}
                       </Text>
                     )}
-                    <Code block>{formatJson(exampleObj.value || example)}</Code>
+                    <CodeBox value={formatJson(exampleObj.value || example)} />
                   </Box>
                 );
               },

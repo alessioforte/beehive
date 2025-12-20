@@ -14,7 +14,7 @@ interface Props {
 
 const ColorSchemeToggle: React.FC<Props> = ({
   theme,
-  color = "gray",
+  color,
   className,
   size = "lg",
   onClick,
@@ -25,6 +25,7 @@ const ColorSchemeToggle: React.FC<Props> = ({
     <ActionIcon
       size={size}
       aria-label="Theme toggle"
+      color={color}
       className={className}
       variant="subtle"
       onClick={() => {

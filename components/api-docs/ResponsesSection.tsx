@@ -9,6 +9,7 @@ import {
 } from "@/types/openapi";
 import { StatusCodeBadge } from "./StatusCodeBadge";
 import { SchemaViewer } from "./SchemaViewer";
+import styles from "./styles.module.css";
 
 interface ResponsesSectionProps {
   responses: Responses;
@@ -68,14 +69,7 @@ export function ResponsesSection({ responses, spec }: ResponsesSectionProps) {
                                     <Box
                                       mt="sm"
                                       p="md"
-                                      style={{
-                                        backgroundColor:
-                                          "var(--mantine-color-gray-0)",
-                                        borderRadius:
-                                          "var(--mantine-radius-md)",
-                                        border:
-                                          "1px solid var(--mantine-color-gray-3)",
-                                      }}
+                                      className={styles.schemaBox}
                                     >
                                       <Text
                                         size="xs"

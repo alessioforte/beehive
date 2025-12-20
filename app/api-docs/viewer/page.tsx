@@ -8,6 +8,7 @@ import { ApiDocumentation } from "@/components/api-docs";
 import ColortSchemeToggle from "@/components/colorscheme-toggle";
 import useStore from "@/store";
 import { useOpenAPISpec } from "@/hooks/useOpenAPISpec";
+import styles from "./page.module.css";
 
 function ViewerContent() {
   const searchParams = useSearchParams();
@@ -16,29 +17,9 @@ function ViewerContent() {
   const { spec, loading, error, refetch } = useOpenAPISpec(specUrl);
   const { theme, setTheme } = useStore();
 
-  const topNavHeight = "60px";
-
   return (
-    <Box
-      style={{
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <Box
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 100,
-          backgroundColor: "var(--mantine-color-body)",
-          borderBottom: "1px solid var(--mantine-color-gray-3)",
-          padding: "0.75rem 1rem",
-          boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
-          height: topNavHeight,
-          flexShrink: 0,
-        }}
-      >
+    <Box className={styles.viewerContainer}>
+      <Box className={styles.header}>
         <Group justify="space-between" wrap="nowrap">
           <Group gap="md" wrap="nowrap">
             <Tooltip label="Back to selection" withArrow>
@@ -97,14 +78,7 @@ export default function ViewerPage() {
   return (
     <Suspense
       fallback={
-        <Box
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            minHeight: "100vh",
-          }}
-        >
+        <Box className={styles.loaderContainer}>
           <Loader size="xl" />
         </Box>
       }

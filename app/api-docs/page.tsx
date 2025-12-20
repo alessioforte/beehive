@@ -8,7 +8,6 @@ import {
   Button,
   Stack,
   Group,
-  Title,
   Text,
   Paper,
   Box,
@@ -27,7 +26,7 @@ export default function ApiDocsPage() {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       handleLoadSpec();
     }
@@ -56,7 +55,7 @@ export default function ApiDocsPage() {
                 placeholder="https://api.example.com/openapi.json"
                 value={specUrl}
                 onChange={(e) => setSpecUrl(e.currentTarget.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyDown}
                 leftSection={<IconSearch size={16} />}
                 description="Enter the URL to your OpenAPI 3.0 specification (JSON or YAML)"
                 style={{ flex: 1 }}
@@ -117,42 +116,6 @@ export default function ApiDocsPage() {
                   Stripe API
                 </Button>
               </Group>
-            </Box>
-          </Stack>
-        </Paper>
-      </Container>
-
-      {/* Welcome Message */}
-      <Container size="md" py="xl">
-        <Paper p="xl" radius="md" withBorder style={{ textAlign: "center" }}>
-          <Stack gap="md" align="center">
-            <IconFileCode size={64} stroke={1} opacity={0.3} />
-            <Title order={3} c="dimmed">
-              Load Your API Specification
-            </Title>
-            <Text c="dimmed" maw={500}>
-              Enter an OpenAPI specification URL above to view beautiful,
-              interactive API documentation in full-screen mode. You can use one
-              of the example APIs or provide your own specification URL.
-            </Text>
-            <Box mt="md">
-              <Text size="sm" fw={500} c="dimmed" mb="xs">
-                Features:
-              </Text>
-              <Stack gap="xs" align="flex-start">
-                <Text size="sm" c="dimmed">
-                  ✨ Full-screen documentation viewer
-                </Text>
-                <Text size="sm" c="dimmed">
-                  🔍 Searchable sidebar navigation
-                </Text>
-                <Text size="sm" c="dimmed">
-                  📊 Interactive schema visualization
-                </Text>
-                <Text size="sm" c="dimmed">
-                  🎨 Beautiful, responsive design
-                </Text>
-              </Stack>
             </Box>
           </Stack>
         </Paper>

@@ -48,9 +48,9 @@ export function OperationCard({
         {/* Header */}
         <Group justify="space-between" wrap="nowrap">
           <Group gap="md" wrap="nowrap" style={{ flex: 1, minWidth: 0 }}>
-            <MethodBadge method={method} size="md" />
             <Box style={{ flex: 1, minWidth: 0 }}>
               <Group gap="xs" wrap="nowrap">
+                <MethodBadge method={method} size="md" />
                 <Text
                   size="md"
                   fw={600}

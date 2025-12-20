@@ -11,6 +11,7 @@ import {
   Anchor,
   Divider,
 } from "@mantine/core";
+import ReactMarkdown from "react-markdown";
 import { IconMail, IconLink, IconScale } from "@tabler/icons-react";
 import { Info, OpenAPISpec } from "@/types/openapi";
 
@@ -30,9 +31,7 @@ export function ApiHeader({ info, servers }: ApiHeaderProps) {
               {info.title}
             </Title>
             {info.description && (
-              <Text size="lg" c="dimmed" style={{ whiteSpace: "pre-wrap" }}>
-                {info.description}
-              </Text>
+              <ReactMarkdown>{info.description}</ReactMarkdown>
             )}
           </Box>
           <Badge
@@ -54,9 +53,9 @@ export function ApiHeader({ info, servers }: ApiHeaderProps) {
                   <Text size="sm" fw={600} c="dimmed">
                     Contact
                   </Text>
-                  {info.contact.name && (
+                  {/*{info.contact.name && (
                     <Text size="sm">{info.contact.name}</Text>
-                  )}
+                  )}*/}
                   {info.contact.email && (
                     <Group gap="xs">
                       <IconMail size={16} />

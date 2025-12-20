@@ -17,7 +17,7 @@ export function MethodBadge({ method, size = "sm" }: MethodBadgeProps) {
       variant="filled"
       size={size}
       radius="sm"
-      style={{ fontWeight: 700, minWidth: 70, textAlign: "center" }}
+      style={{ fontWeight: 700, minWidth: 60, textAlign: "center" }}
     >
       {method.toUpperCase()}
     </Badge>

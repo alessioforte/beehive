@@ -1,9 +1,11 @@
 "use client";
 
-import { Box, Code, Text, Stack, Group, Badge, Collapse } from "@mantine/core";
+import { Box, Text, Stack, Group, Badge, Collapse } from "@mantine/core";
 import { useState } from "react";
 import { Schema, OpenAPISpec } from "@/types/openapi";
+import { IconChevronDown, IconChevronRight } from "@tabler/icons-react";
 import { getSchemaType, resolveRef } from "@/utils/openapi-helpers";
+// import CodeBox from "./CodeBox";
 
 interface SchemaViewerProps {
   schema: Schema;
@@ -39,26 +41,34 @@ export function SchemaViewer({
   }
 
   const schemaType = getSchemaType(schema, spec);
-  const indent = level * 20;
+  const indent = level * 5;
 
   // Render simple types
   if (schema.type && !schema.properties && schema.type !== "array") {
+    console.log(schema);
     return (
       <Box pl={indent}>
         <Group gap="xs" wrap="nowrap">
           {name && (
             <Text size="sm" fw={500} c="blue">
               {name}:
+              {schema.required?.includes(name || "") ? (
+                <Text component="span" c="red" ml={4}>
+                  *
+                </Text>
+              ) : (
+                ""
+              )}
             </Text>
           )}
-          <Badge size="xs" variant="dot" color="gray">
+          <Badge size="xs" variant="dot" color="orange" radius="xs">
             {schemaType}
           </Badge>
-          {schema.required?.includes(name || "") && (
-            <Badge size="xs" color="red" variant="light">
+          {/*{schema.required?.includes(name || "") && (
+            <Badge size="xs" color="red" variant="light" radius="xs">
               required
             </Badge>
-          )}
+          )}*/}
           {schema.description && (
             <Text size="xs" c="dimmed" lineClamp={1}>
               {schema.description}
@@ -75,11 +85,12 @@ export function SchemaViewer({
             Default: {JSON.stringify(schema.default)}
           </Text>
         )}
-        {schema.example !== undefined && (
-          <Code block mt="xs">
+        {/*{schema.example !== undefined && (
+          // <CodeBox value={JSON.stringify(schema.example, null, 2)} />
+          <Text size="xs" c="dimmed" pl="md">
             {JSON.stringify(schema.example, null, 2)}
-          </Code>
-        )}
+          </Text>
+        )}*/}
       </Box>
     );
   }
@@ -94,7 +105,7 @@ export function SchemaViewer({
               {name}:
             </Text>
           )}
-          <Badge size="xs" variant="dot" color="violet">
+          <Badge size="xs" variant="dot" color="violet" radius="xs">
             array
           </Badge>
           {schema.description && (
@@ -127,14 +138,18 @@ export function SchemaViewer({
         >
           <Group gap="xs" wrap="nowrap">
             <Text size="sm" c="dimmed">
-              {expanded ? "▼" : "▶"}
+              {expanded ? (
+                <IconChevronDown size={14} />
+              ) : (
+                <IconChevronRight size={14} />
+              )}
             </Text>
             {name && (
               <Text size="sm" fw={500} c="blue">
                 {name}:
               </Text>
             )}
-            <Badge size="xs" variant="dot" color="teal">
+            <Badge size="xs" variant="dot" color="teal" radius="xs">
               object
             </Badge>
             {schema.description && (
@@ -156,11 +171,17 @@ export function SchemaViewer({
                       level={level + 1}
                       name={propName}
                     />
-                    {schema.required?.includes(propName) && (
-                      <Badge size="xs" color="red" variant="light" ml="xs">
+                    {/*{schema.required?.includes(propName) && (
+                      <Badge
+                        size="xs"
+                        color="red"
+                        variant="light"
+                        ml="xs"
+                        radius="xs"
+                      >
                         required
                       </Badge>
-                    )}
+                    )}*/}
                   </Box>
                 ),
               )}
@@ -184,7 +205,7 @@ export function SchemaViewer({
             {name}:
           </Text>
         )}
-        <Badge size="xs" variant="dot">
+        <Badge size="xs" variant="dot" radius="xs">
           {schemaType}
         </Badge>
         {schema.description && (

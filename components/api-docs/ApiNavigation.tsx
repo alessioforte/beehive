@@ -16,6 +16,7 @@ import { useState, useMemo } from "react";
 import { OpenAPISpec } from "@/types/openapi";
 import { groupByTags } from "@/utils/openapi-helpers";
 import { MethodBadge } from "./MethodBadge";
+import styles from "./styles.module.css";
 
 interface ApiNavigationProps {
   spec: OpenAPISpec;
@@ -106,14 +107,7 @@ export function ApiNavigation({ spec, onNavigate }: ApiNavigationProps) {
   };
 
   return (
-    <Box
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        overflow: "hidden",
-      }}
-    >
+    <Box className={styles.nav}>
       <Box p="md" style={{ flexShrink: 0 }}>
         <Text size="lg" fw={700} mb="md">
           API Endpoints
@@ -176,7 +170,7 @@ export function ApiNavigation({ spec, onNavigate }: ApiNavigationProps) {
                             </Group>
                             {(endpoint.operation as { summary?: string })
                               .summary && (
-                              <Text size="xs" c="dimmed" lineClamp={1} pl="md">
+                              <Text size="xs" c="dimmed" lineClamp={1}>
                                 {
                                   (endpoint.operation as { summary?: string })
                                     .summary

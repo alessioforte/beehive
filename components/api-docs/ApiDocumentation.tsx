@@ -18,7 +18,9 @@ import { ApiHeader } from "./ApiHeader";
 import { ApiNavigation } from "./ApiNavigation";
 import { OperationCard } from "./OperationCard";
 import { groupByTags } from "@/utils/openapi-helpers";
+import CodeBox from "./CodeBox";
 import { useMemo } from "react";
+import styles from "./styles.module.css";
 
 interface ApiDocumentationProps {
   spec: OpenAPISpec | null;
@@ -41,7 +43,7 @@ export function ApiDocumentation({
   // Loading state
   if (loading) {
     return (
-      <Box pos="relative" mih={400}>
+      <Box pos="relative" mih="100vh">
         <LoadingOverlay
           visible={true}
           zIndex={1000}
@@ -91,30 +93,15 @@ export function ApiDocumentation({
   }
 
   return (
-    <Box
-      style={{
-        display: "flex",
-        height: "100%",
-        overflow: "hidden",
-        position: "relative",
-      }}
-    >
+    <Box className={styles.docsContainer}>
       <Box
-        style={{
-          width: "300px",
-          flexShrink: 0,
-          borderRight: "1px solid var(--mantine-color-gray-3)",
-          backgroundColor: "var(--mantine-color-gray-0)",
-          display: "flex",
-          flexDirection: "column",
-        }}
+        className={styles.apiNavigation}
         display={{ base: "none", md: "flex" }}
       >
         <ApiNavigation spec={spec} />
       </Box>
 
       <ScrollArea
-        // id="api-content-scroll-container"
         style={{
           flex: 1,
           overflow: "auto",
@@ -123,10 +110,8 @@ export function ApiDocumentation({
       >
         <Container size="xl" py="xl">
           <Stack gap="xl">
-            {/* API Header */}
             <ApiHeader info={spec.info} servers={spec.servers} />
 
-            {/* Main Content Tabs */}
             <Tabs defaultValue="endpoints" variant="outline">
               <Tabs.List>
                 <Tabs.Tab
@@ -217,21 +202,14 @@ export function ApiDocumentation({
                               {schema.description}
                             </Text>
                           )}
-                          <Box
-                            p="md"
-                            style={{
-                              backgroundColor: "var(--mantine-color-gray-0)",
-                              borderRadius: "var(--mantine-radius-md)",
-                              border: "1px solid var(--mantine-color-gray-3)",
-                            }}
-                          >
+                          <Box>
                             <Text size="xs" fw={600} c="dimmed" mb="sm">
                               Schema Definition
                             </Text>
                             <Box component="pre" style={{ overflow: "auto" }}>
-                              <Text size="xs" ff="monospace">
-                                {JSON.stringify(schema, null, 2)}
-                              </Text>
+                              <CodeBox
+                                value={JSON.stringify(schema, null, 2)}
+                              />
                             </Box>
                           </Box>
                         </Paper>
