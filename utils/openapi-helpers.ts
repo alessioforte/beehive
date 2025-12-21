@@ -133,3 +133,8 @@ export function extractSchemaExample(
 
   return typeDefaults[schema.type || "string"];
 }
+
+export function isPrimitiveType(type?: string): boolean {
+  if (!type) return false;
+  return ["string", "number", "integer", "boolean"].includes(type);
+}

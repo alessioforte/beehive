@@ -1,24 +1,108 @@
 "use client";
 
-import { Box, Text, Stack, Group, Badge, Collapse } from "@mantine/core";
+import { Box, Text, Stack, Group, Collapse, Center } from "@mantine/core";
 import { useState } from "react";
 import { Schema, OpenAPISpec } from "@/types/openapi";
 import { IconChevronDown, IconChevronRight } from "@tabler/icons-react";
-import { getSchemaType, resolveRef } from "@/utils/openapi-helpers";
-// import CodeBox from "./CodeBox";
+import {
+  getSchemaType,
+  resolveRef,
+  isPrimitiveType,
+} from "@/utils/openapi-helpers";
+import TypeBadge from "./TypeBadge";
 
 interface SchemaViewerProps {
   schema: Schema;
   spec?: OpenAPISpec;
   level?: number;
   name?: string;
+  required?: boolean;
 }
+
+interface FieldHeaderProps {
+  name?: string;
+  type: string;
+  description?: string;
+  required?: boolean;
+  expandable?: boolean;
+  expanded?: boolean;
+  onToggle?: () => void;
+  schemaEnum?: unknown[];
+  schemaDefault?: unknown;
+}
+
+const FieldHeader = ({
+  name,
+  type,
+  description,
+  required,
+  expandable = false,
+  expanded = false,
+  onToggle,
+  schemaEnum,
+  schemaDefault,
+}: FieldHeaderProps) => {
+  const content = (
+    <Group gap={5} wrap="nowrap">
+      <Center w={14} h={14}>
+        {expandable && (
+          <>
+            {expanded ? (
+              <IconChevronDown size={14} />
+            ) : (
+              <IconChevronRight size={14} />
+            )}
+          </>
+        )}
+      </Center>
+      {name && (
+        <Text size="sm" fw={500} c="blue">
+          {name}
+          {required && (
+            <Text component="span" c="red">
+              *
+            </Text>
+          )}
+          :
+        </Text>
+      )}
+      <TypeBadge type={type} />
+      {description && (
+        <Text size="xs" c="dimmed" lineClamp={1}>
+          {description}
+        </Text>
+      )}
+
+      {schemaEnum && (
+        <Text size="xs" c="dimmed" pl="md">
+          Enum: [{schemaEnum.join(", ")}]
+        </Text>
+      )}
+      {schemaDefault !== undefined && (
+        <Text size="xs" c="dimmed" pl="md">
+          Default: {JSON.stringify(schemaDefault)}
+        </Text>
+      )}
+    </Group>
+  );
+
+  if (expandable && onToggle) {
+    return (
+      <Box onClick={onToggle} style={{ cursor: "pointer" }}>
+        {content}
+      </Box>
+    );
+  }
+
+  return content;
+};
 
 export function SchemaViewer({
   schema,
   spec,
   level = 0,
   name,
+  required = false,
 }: SchemaViewerProps) {
   const [expanded, setExpanded] = useState(level < 2);
 
@@ -35,7 +119,13 @@ export function SchemaViewer({
     const resolved = resolveRef(schema.$ref, spec);
     if (resolved) {
       return (
-        <SchemaViewer schema={resolved} spec={spec} level={level} name={name} />
+        <SchemaViewer
+          schema={resolved}
+          spec={spec}
+          level={level}
+          name={name}
+          required={required}
+        />
       );
     }
   }
@@ -43,88 +133,16 @@ export function SchemaViewer({
   const schemaType = getSchemaType(schema, spec);
   const indent = level * 5;
 
-  // Render simple types
-  if (schema.type && !schema.properties && schema.type !== "array") {
-    console.log(schema);
-    return (
-      <Box pl={indent}>
-        <Group gap="xs" wrap="nowrap">
-          {name && (
-            <Text size="sm" fw={500} c="blue">
-              {name}:
-              {schema.required?.includes(name || "") ? (
-                <Text component="span" c="red" ml={4}>
-                  *
-                </Text>
-              ) : (
-                ""
-              )}
-            </Text>
-          )}
-          <Badge size="xs" variant="dot" color="orange" radius="xs">
-            {schemaType}
-          </Badge>
-          {/*{schema.required?.includes(name || "") && (
-            <Badge size="xs" color="red" variant="light" radius="xs">
-              required
-            </Badge>
-          )}*/}
-          {schema.description && (
-            <Text size="xs" c="dimmed" lineClamp={1}>
-              {schema.description}
-            </Text>
-          )}
-        </Group>
-        {schema.enum && (
-          <Text size="xs" c="dimmed" pl="md">
-            Enum: [{schema.enum.join(", ")}]
-          </Text>
-        )}
-        {schema.default !== undefined && (
-          <Text size="xs" c="dimmed" pl="md">
-            Default: {JSON.stringify(schema.default)}
-          </Text>
-        )}
-        {/*{schema.example !== undefined && (
-          // <CodeBox value={JSON.stringify(schema.example, null, 2)} />
-          <Text size="xs" c="dimmed" pl="md">
-            {JSON.stringify(schema.example, null, 2)}
-          </Text>
-        )}*/}
-      </Box>
-    );
-  }
-
   // Render array types
   if (schema.type === "array" && schema.items) {
     return (
-      <Box pl={indent}>
-        <Group gap="xs" wrap="nowrap">
-          {name && (
-            <Text size="sm" fw={500} c="blue">
-              {name}:
-            </Text>
-          )}
-          <Badge size="xs" variant="dot" color="violet" radius="xs">
-            array
-          </Badge>
-          {schema.description && (
-            <Text size="xs" c="dimmed" lineClamp={1}>
-              {schema.description}
-            </Text>
-          )}
-        </Group>
-        <Box mt="xs">
-          <Text size="xs" c="dimmed" mb="xs">
-            Items:
-          </Text>
-          <SchemaViewer
-            schema={schema.items as Schema}
-            spec={spec}
-            level={level + 1}
-          />
-        </Box>
-      </Box>
+      <FieldArrayViewer
+        schema={schema}
+        spec={spec}
+        level={level}
+        name={name}
+        required={required}
+      />
     );
   }
 
@@ -132,58 +150,33 @@ export function SchemaViewer({
   if (schema.properties || schema.type === "object") {
     return (
       <Box pl={indent}>
-        <Box
-          onClick={() => setExpanded(!expanded)}
-          style={{ cursor: "pointer" }}
-        >
-          <Group gap="xs" wrap="nowrap">
-            <Text size="sm" c="dimmed">
-              {expanded ? (
-                <IconChevronDown size={14} />
-              ) : (
-                <IconChevronRight size={14} />
-              )}
-            </Text>
-            {name && (
-              <Text size="sm" fw={500} c="blue">
-                {name}:
-              </Text>
-            )}
-            <Badge size="xs" variant="dot" color="teal" radius="xs">
-              object
-            </Badge>
-            {schema.description && (
-              <Text size="xs" c="dimmed" lineClamp={1}>
-                {schema.description}
-              </Text>
-            )}
-          </Group>
-        </Box>
+        <FieldHeader
+          name={name}
+          type={schema.type || "object"}
+          description={schema.description}
+          required={required}
+          expandable={true}
+          expanded={expanded}
+          onToggle={() => setExpanded(!expanded)}
+        />
         <Collapse in={expanded}>
           <Stack gap="xs" mt="xs" pl="md">
             {schema.properties &&
               Object.entries(schema.properties).map(
-                ([propName, propSchema]) => (
-                  <Box key={propName}>
+                ([propName, propSchema]) => {
+                  const isRequired =
+                    schema.required?.includes(propName) || false;
+                  return (
                     <SchemaViewer
+                      key={propName}
                       schema={propSchema as Schema}
                       spec={spec}
                       level={level + 1}
                       name={propName}
+                      required={isRequired}
                     />
-                    {/*{schema.required?.includes(propName) && (
-                      <Badge
-                        size="xs"
-                        color="red"
-                        variant="light"
-                        ml="xs"
-                        radius="xs"
-                      >
-                        required
-                      </Badge>
-                    )}*/}
-                  </Box>
-                ),
+                  );
+                },
               )}
             {!schema.properties && (
               <Text size="xs" c="dimmed">
@@ -199,21 +192,75 @@ export function SchemaViewer({
   // Fallback
   return (
     <Box pl={indent}>
-      <Group gap="xs">
-        {name && (
-          <Text size="sm" fw={500} c="blue">
-            {name}:
-          </Text>
-        )}
-        <Badge size="xs" variant="dot" radius="xs">
-          {schemaType}
-        </Badge>
-        {schema.description && (
-          <Text size="xs" c="dimmed">
-            {schema.description}
-          </Text>
-        )}
-      </Group>
+      <FieldHeader
+        name={name}
+        type={schemaType}
+        required={required}
+        description={schema.description}
+        schemaEnum={schema.enum}
+        schemaDefault={schema.default}
+      />
     </Box>
   );
 }
+
+const FieldArrayViewer = ({
+  schema,
+  spec,
+  level = 0,
+  name,
+  required = false,
+}: SchemaViewerProps) => {
+  const indent = level * 5;
+  const [expanded, setExpanded] = useState(false);
+
+  let itemsSchema = schema.items as Schema;
+  if (itemsSchema.$ref && spec) {
+    itemsSchema = resolveRef(itemsSchema.$ref, spec) as Schema;
+  }
+
+  return (
+    <Box pl={indent}>
+      <Group gap={0} wrap="nowrap">
+        <FieldHeader
+          name={name}
+          type="array"
+          description={schema.description}
+          required={required}
+          expandable={!isPrimitiveType(itemsSchema.type)}
+          expanded={expanded}
+          onToggle={() => setExpanded(!expanded)}
+        />
+        <TypeBadge type={getSchemaType(itemsSchema, spec)} />
+      </Group>
+      {!isPrimitiveType(itemsSchema.type) && (
+        <Collapse in={expanded}>
+          <Stack gap="xs" mt="xs" pl="md">
+            {itemsSchema.properties &&
+              Object.entries(itemsSchema.properties).map(
+                ([propName, propSchema]) => {
+                  const isRequired =
+                    schema.required?.includes(propName) || false;
+                  return (
+                    <SchemaViewer
+                      key={propName}
+                      schema={propSchema as Schema}
+                      spec={spec}
+                      level={level + 1}
+                      name={propName}
+                      required={isRequired}
+                    />
+                  );
+                },
+              )}
+            {!itemsSchema.properties && (
+              <Text size="xs" c="dimmed">
+                Additional properties allowed
+              </Text>
+            )}
+          </Stack>
+        </Collapse>
+      )}
+    </Box>
+  );
+};

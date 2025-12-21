@@ -12,7 +12,12 @@ import {
   Paper,
   ScrollArea,
 } from "@mantine/core";
-import { IconAlertCircle, IconBook, IconSchema } from "@tabler/icons-react";
+import {
+  IconAlertCircle,
+  IconBook,
+  IconSchema,
+  IconAlertTriangle,
+} from "@tabler/icons-react";
 import { OpenAPISpec, Operation } from "@/types/openapi";
 import { ApiHeader } from "./ApiHeader";
 import { ApiNavigation } from "./ApiNavigation";
@@ -38,6 +43,22 @@ export function ApiDocumentation({
   const groupedEndpoints = useMemo(() => {
     if (!spec?.paths) return new Map();
     return groupByTags(spec.paths as Record<string, Record<string, unknown>>);
+  }, [spec]);
+
+  const deprecatedCount = useMemo(() => {
+    if (!spec?.paths) return 0;
+    let count = 0;
+    Object.values(spec.paths).forEach((pathItem) => {
+      ["get", "post", "put", "delete", "patch"].forEach((method) => {
+        const operation = pathItem[method as keyof typeof pathItem] as
+          | Operation
+          | undefined;
+        if (operation?.deprecated) {
+          count++;
+        }
+      });
+    });
+    return count;
   }, [spec]);
 
   // Loading state
@@ -131,6 +152,20 @@ export function ApiDocumentation({
               {/* Endpoints Tab */}
               <Tabs.Panel value="endpoints" pt="xl">
                 <Stack gap="xl">
+                  {deprecatedCount > 0 && (
+                    <Alert
+                      icon={<IconAlertTriangle size={16} />}
+                      color="yellow"
+                      title="Deprecated Endpoints"
+                    >
+                      <Text size="sm">
+                        This API has {deprecatedCount} deprecated endpoint
+                        {deprecatedCount !== 1 ? "s" : ""}. Consider migrating
+                        to newer alternatives.
+                      </Text>
+                    </Alert>
+                  )}
+
                   {Array.from(groupedEndpoints.entries()).map(
                     ([tag, endpoints]) => {
                       const tagInfo = spec.tags?.find((t) => t.name === tag);
@@ -158,13 +193,19 @@ export function ApiDocumentation({
                                 },
                                 index: number,
                               ) => (
-                                <OperationCard
+                                <Box
                                   key={`${endpoint.path}-${endpoint.method}-${index}`}
-                                  path={endpoint.path}
-                                  method={endpoint.method}
-                                  operation={endpoint.operation}
-                                  spec={spec}
-                                />
+                                  opacity={
+                                    endpoint.operation.deprecated ? 0.7 : 1
+                                  }
+                                >
+                                  <OperationCard
+                                    path={endpoint.path}
+                                    method={endpoint.method}
+                                    operation={endpoint.operation}
+                                    spec={spec}
+                                  />
+                                </Box>
                               ),
                             )}
                           </Stack>

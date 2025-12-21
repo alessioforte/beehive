@@ -1,8 +1,9 @@
 "use client";
 
-import { Table, Badge, Text, Code, Stack, Box } from "@mantine/core";
+import { Group, Table, Badge, Text, Code, Stack, Box } from "@mantine/core";
 import { Parameter, OpenAPISpec } from "@/types/openapi";
 import { getSchemaType } from "@/utils/openapi-helpers";
+import TypeBadge from "./TypeBadge";
 
 interface ParametersTableProps {
   parameters: Parameter[];
@@ -42,27 +43,27 @@ export function ParametersTable({
             return (
               <Table.Tr key={`${param.name}-${index}`}>
                 <Table.Td>
-                  <Stack gap={4}>
-                    <Code>{param.name}</Code>
+                  <Group gap={5}>
+                    <Text size="sm" fw={500} c="blue">
+                      {param.name}
+                    </Text>
                     {param.required && (
-                      <Badge size="xs" color="red" variant="light">
-                        required
-                      </Badge>
+                      <Text component="span" c="red">
+                        *
+                      </Text>
                     )}
                     {param.deprecated && (
                       <Badge size="xs" color="orange" variant="light">
                         deprecated
                       </Badge>
                     )}
-                  </Stack>
+                  </Group>
                 </Table.Td>
                 <Table.Td>
-                  <Badge size="sm" variant="dot" color="blue">
-                    {schemaType}
-                  </Badge>
+                  <TypeBadge type={schemaType} />
                 </Table.Td>
                 <Table.Td>
-                  <Badge size="sm" variant="outline" color="gray">
+                  <Badge size="sm" variant="transparent" color="gray" p={0}>
                     {param.in}
                   </Badge>
                 </Table.Td>
