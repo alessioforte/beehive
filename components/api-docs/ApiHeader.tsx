@@ -7,7 +7,6 @@ import {
   Group,
   Badge,
   Stack,
-  Paper,
   Anchor,
   Divider,
 } from "@mantine/core";
@@ -22,9 +21,8 @@ interface ApiHeaderProps {
 
 export function ApiHeader({ info, servers }: ApiHeaderProps) {
   return (
-    <Paper shadow="sm" p="xl" radius="md" withBorder>
+    <Box p="xl">
       <Stack gap="lg">
-        {/* Title and Version */}
         <Group justify="space-between" align="flex-start" wrap="wrap">
           <Box style={{ flex: 1 }}>
             <Title order={1} size="h1" mb="xs">
@@ -34,16 +32,16 @@ export function ApiHeader({ info, servers }: ApiHeaderProps) {
               <ReactMarkdown>{info.description}</ReactMarkdown>
             )}
           </Box>
-          <Badge
+          <Text
             size="xl"
+            fw={900}
             variant="gradient"
             gradient={{ from: "blue", to: "cyan" }}
           >
             v{info.version}
-          </Badge>
+          </Text>
         </Group>
 
-        {/* Contact and License Info */}
         {(info.contact || info.license) && (
           <>
             <Divider />
@@ -96,7 +94,6 @@ export function ApiHeader({ info, servers }: ApiHeaderProps) {
           </>
         )}
 
-        {/* Servers */}
         {servers && servers.length > 0 && (
           <>
             <Divider />
@@ -107,7 +104,7 @@ export function ApiHeader({ info, servers }: ApiHeaderProps) {
               <Stack gap="xs">
                 {servers.map((server, index) => (
                   <Group key={index} gap="xs" wrap="nowrap">
-                    <Badge variant="light" color="teal">
+                    <Badge variant="light" color="teal" radius="xs">
                       Server {index + 1}
                     </Badge>
                     <Text
@@ -129,6 +126,6 @@ export function ApiHeader({ info, servers }: ApiHeaderProps) {
           </>
         )}
       </Stack>
-    </Paper>
+    </Box>
   );
 }

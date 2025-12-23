@@ -108,6 +108,9 @@ export interface Schema {
   maxLength?: number;
   pattern?: string;
   $ref?: string;
+  allOf?: Schema[];
+  oneOf?: Schema[];
+  anyOf?: Schema[];
 }
 
 export interface Components {

@@ -7,7 +7,6 @@ import {
   Stack,
   Divider,
   Badge,
-  Accordion,
   Box,
   CopyButton,
   ActionIcon,
@@ -19,6 +18,7 @@ import { MethodBadge } from "./MethodBadge";
 import { ParametersTable } from "./ParametersTable";
 import { RequestBodySection } from "./RequestBodySection";
 import { ResponsesSection } from "./ResponsesSection";
+import styles from "./styles.module.css";
 
 interface OperationCardProps {
   path: string;
@@ -37,15 +37,15 @@ export function OperationCard({
 
   return (
     <Card
+      m="sm"
       shadow="sm"
-      padding="lg"
-      radius="md"
       withBorder
+      radius="sm"
       id={pathId}
       style={{ scrollMarginTop: "80px" }}
+      className={styles.operationCard}
     >
       <Stack gap="md">
-        {/* Header */}
         <Group justify="space-between" wrap="nowrap">
           <Group gap="md" wrap="nowrap" style={{ flex: 1, minWidth: 0 }}>
             <Box style={{ flex: 1, minWidth: 0 }}>
@@ -95,7 +95,6 @@ export function OperationCard({
           )}
         </Group>
 
-        {/* Description */}
         {operation.description &&
           operation.description !== operation.summary && (
             <>
@@ -106,7 +105,6 @@ export function OperationCard({
             </>
           )}
 
-        {/* Operation ID */}
         {operation.operationId && (
           <Box>
             <Text size="xs" c="dimmed" fw={500}>
@@ -120,93 +118,44 @@ export function OperationCard({
 
         <Divider />
 
-        {/* Details Accordion */}
-        <Accordion
-          variant="separated"
-          multiple
-          defaultValue={["parameters", "responses"]}
-        >
-          {/* Parameters */}
-          {operation.parameters && operation.parameters.length > 0 && (
-            <Accordion.Item value="parameters">
-              <Accordion.Control>
-                <Group gap="xs">
-                  <Text fw={600}>Parameters</Text>
-                  <Badge size="sm" variant="light">
-                    {operation.parameters.length}
-                  </Badge>
-                </Group>
-              </Accordion.Control>
-              <Accordion.Panel>
-                <ParametersTable
-                  parameters={operation.parameters}
-                  spec={spec}
-                />
-              </Accordion.Panel>
-            </Accordion.Item>
-          )}
+        {operation.parameters && operation.parameters.length > 0 && (
+          <ParametersTable parameters={operation.parameters} spec={spec} />
+        )}
 
-          {/* Request Body */}
-          {operation.requestBody && (
-            <Accordion.Item value="request-body">
-              <Accordion.Control>
-                <Text fw={600}>Request Body</Text>
-              </Accordion.Control>
-              <Accordion.Panel>
-                <RequestBodySection
-                  requestBody={operation.requestBody}
-                  spec={spec}
-                />
-              </Accordion.Panel>
-            </Accordion.Item>
-          )}
+        {operation.requestBody && (
+          <RequestBodySection requestBody={operation.requestBody} spec={spec} />
+        )}
 
-          {/* Responses */}
-          {operation.responses && (
-            <Accordion.Item value="responses">
-              <Accordion.Control>
-                <Group gap="xs">
-                  <Text fw={600}>Responses</Text>
-                  <Badge size="sm" variant="light">
-                    {Object.keys(operation.responses).length}
-                  </Badge>
-                </Group>
-              </Accordion.Control>
-              <Accordion.Panel>
-                <ResponsesSection responses={operation.responses} spec={spec} />
-              </Accordion.Panel>
-            </Accordion.Item>
-          )}
+        {operation.responses && (
+          <ResponsesSection responses={operation.responses} spec={spec} />
+        )}
 
-          {/* Security */}
-          {operation.security && operation.security.length > 0 && (
-            <Accordion.Item value="security">
-              <Accordion.Control>
-                <Text fw={600}>Security</Text>
-              </Accordion.Control>
-              <Accordion.Panel>
-                <Stack gap="xs">
-                  {operation.security.map((secReq, index) => (
-                    <Box key={index}>
-                      {Object.entries(secReq).map(([name, scopes]) => (
-                        <Group key={name} gap="xs">
-                          <Badge variant="light" color="indigo">
-                            {name}
-                          </Badge>
-                          {scopes.length > 0 && (
-                            <Text size="sm" c="dimmed">
-                              Scopes: {scopes.join(", ")}
-                            </Text>
-                          )}
-                        </Group>
-                      ))}
-                    </Box>
+        {operation.security && operation.security.length > 0 && (
+          <Box>
+            <Text size="sm" fw={600} mb="sm">
+              Security
+            </Text>
+
+            <Stack gap="xs">
+              {operation.security.map((secReq, index) => (
+                <Box key={index}>
+                  {Object.entries(secReq).map(([name, scopes]) => (
+                    <Group key={name} gap="xs">
+                      <Badge variant="light" color="indigo">
+                        {name}
+                      </Badge>
+                      {scopes.length > 0 && (
+                        <Text size="sm" c="dimmed">
+                          Scopes: {scopes.join(", ")}
+                        </Text>
+                      )}
+                    </Group>
                   ))}
-                </Stack>
-              </Accordion.Panel>
-            </Accordion.Item>
-          )}
-        </Accordion>
+                </Box>
+              ))}
+            </Stack>
+          </Box>
+        )}
       </Stack>
     </Card>
   );

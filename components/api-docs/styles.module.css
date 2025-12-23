@@ -3,6 +3,10 @@
   height: 100%;
   overflow: hidden;
   position: relative;
+  background: light-dark(
+    var(--mantine-color-gray-0),
+    var(--mantine-color-dark-7)
+  );
 }
 
 .navContainer {
@@ -18,7 +22,7 @@
   height: 100%;
   overflow: hidden;
   background-color: light-dark(
-    var(--mantine-color-gray-0),
+    var(--mantine-color-gray-1),
     var(--mantine-color-dark-8)
   );
   border-right: 1px solid
@@ -33,4 +37,15 @@
   border-radius: var(--mantine-radius-md);
   border: 1px solid
     light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-5));
+}
+
+.operationCard {
+  background-color: light-dark(
+    var(--mantine-color-white),
+    var(--mantine-color-dark-8)
+  );
+}
+
+.schemaCard {
+  background-color: light-dark(var(--mantine-color-white), #1e1e1e);
 }

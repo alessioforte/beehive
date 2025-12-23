@@ -26,7 +26,7 @@ export function ResponsesSection({ responses, spec }: ResponsesSectionProps) {
       <Text size="sm" fw={600} mb="sm">
         Responses
       </Text>
-      <Accordion variant="separated" radius="md">
+      <Accordion variant="separated" radius="sm">
         {Object.entries(responses).map(
           ([statusCode, response]: [string, OpenAPIResponse]) => {
             const statusDescription = response.description || "No description";

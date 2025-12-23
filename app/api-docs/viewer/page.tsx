@@ -1,21 +1,34 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Box, ActionIcon, Tooltip, Group, Text, Loader } from "@mantine/core";
 import { IconArrowLeft, IconExternalLink } from "@tabler/icons-react";
 import { ApiDocumentation } from "@/components/api-docs";
 import ColortSchemeToggle from "@/components/colorscheme-toggle";
 import useStore from "@/store";
-import { useOpenAPISpec } from "@/hooks/useOpenAPISpec";
 import styles from "./page.module.css";
 
 function ViewerContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const specUrl = searchParams.get("url") || "";
-  const { spec, loading, error, refetch } = useOpenAPISpec(specUrl);
-  const { theme, setTheme } = useStore();
+
+  const {
+    openAPISpec,
+    openAPILoading,
+    openAPIError,
+    fetchOpenAPISpec,
+    refetchOpenAPISpec,
+    theme,
+    setTheme,
+  } = useStore();
+
+  useEffect(() => {
+    if (specUrl) {
+      fetchOpenAPISpec(specUrl);
+    }
+  }, [specUrl, fetchOpenAPISpec]);
 
   return (
     <Box className={styles.viewerContainer}>
@@ -31,12 +44,12 @@ function ViewerContent() {
                 <IconArrowLeft size={20} />
               </ActionIcon>
             </Tooltip>
-            {spec && (
+            {openAPISpec && (
               <Box
                 style={{ maxWidth: "calc(100vw - 200px)", overflow: "hidden" }}
               >
                 <Text size="sm" fw={600} truncate>
-                  {spec.info.title}
+                  {openAPISpec.info.title}
                 </Text>
                 <Text size="xs" c="dimmed" truncate>
                   {decodeURIComponent(specUrl)}
@@ -65,10 +78,10 @@ function ViewerContent() {
       </Box>
 
       <ApiDocumentation
-        spec={spec}
-        loading={loading}
-        error={error}
-        onRetry={refetch}
+        spec={openAPISpec}
+        loading={openAPILoading}
+        error={openAPIError}
+        onRetry={refetchOpenAPISpec}
       />
     </Box>
   );

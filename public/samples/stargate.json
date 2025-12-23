@@ -1,0 +1,878 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Stargate APIs ✨",
+    "description": "APIs for user authentication and management in Stargate.",
+    "contact": {
+      "name": "Alessio Forte",
+      "email": "fortealessio@gmail.com"
+    },
+    "license": {
+      "name": "MIT",
+      "identifier": "MIT"
+    },
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/account/credentials": {
+      "put": {
+        "tags": ["Account"],
+        "summary": "Change Password",
+        "description": "Change the user's password using a valid password reset token.",
+        "operationId": "handler",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordRequestBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Account"],
+        "summary": "Initiate Password Reset",
+        "description": "Initiate a password reset request by providing the user's email address. If the email exists in the system, a password reset link will be sent to that email.",
+        "operationId": "handler",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordRequestBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/account/login": {
+      "post": {
+        "tags": ["Account"],
+        "summary": "User Login",
+        "description": "Authenticate a user using their username and password. On successful authentication, an access token and a refresh token are issued.",
+        "operationId": "handler",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCredentials"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid Credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/account/logout": {
+      "delete": {
+        "tags": ["Account"],
+        "summary": "User Logout",
+        "description": "Log out the currently authenticated user by invalidating their session token.",
+        "operationId": "handler",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized - Invalid Token"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/account/profile": {
+      "get": {
+        "tags": ["Account"],
+        "summary": "Get User Profile",
+        "description": "Retrieve the profile information of the currently authenticated user using their access token.",
+        "operationId": "handler",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid Token"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/account/refresh-token": {
+      "put": {
+        "tags": ["Account"],
+        "summary": "Refresh Access Token",
+        "description": "Refresh the access token using a valid refresh token. This endpoint validates the provided refresh token and issues a new access token along with a new refresh token.",
+        "operationId": "handler",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenRequestBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized - Invalid Token"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/admin/apikeys": {
+      "get": {
+        "tags": ["Admin"],
+        "operationId": "get_api_keys",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Admin"],
+        "operationId": "create_api_key",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiKey"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/admin/apikeys/{id}": {
+      "delete": {
+        "tags": ["Admin"],
+        "operationId": "delete_api_key",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/admin/configurations": {
+      "get": {
+        "tags": ["Admin"],
+        "operationId": "get_configurations",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Admin"],
+        "operationId": "update_configurations",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Config"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/admin/users": {
+      "get": {
+        "tags": ["Admin"],
+        "operationId": "get_users",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Admin"],
+        "operationId": "create_user",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/admin/users/{id}": {
+      "put": {
+        "tags": ["Admin"],
+        "operationId": "update_user",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Admin"],
+        "operationId": "delete_user",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Admin"],
+        "operationId": "patch_user",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/docs": {
+      "get": {
+        "tags": ["Documentation"],
+        "operationId": "get_api_doc",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": ["Health"],
+        "operationId": "get",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/signup": {
+      "get": {
+        "tags": ["Signup"],
+        "operationId": "handler",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Signup"],
+        "operationId": "handler",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignupCompleteRequestBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Signup"],
+        "operationId": "handler",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignupRequestBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AccessControl": {
+        "type": "object",
+        "properties": {
+          "policies": {
+            "type": ["string", "null"]
+          },
+          "policies_path": {
+            "type": ["string", "null"]
+          }
+        }
+      },
+      "ApiKey": {
+        "type": "object",
+        "required": ["accountId"],
+        "properties": {
+          "accountId": {
+            "type": "string"
+          },
+          "attrs": {},
+          "exp": {
+            "type": ["string", "null"]
+          },
+          "label": {
+            "type": ["string", "null"]
+          }
+        }
+      },
+      "AuthResponse": {
+        "type": "object",
+        "required": ["accessToken", "refreshToken", "tokenType"],
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "refreshToken": {
+            "type": "string"
+          },
+          "tokenType": {
+            "type": "string"
+          }
+        }
+      },
+      "ChangePasswordRequestBody": {
+        "type": "object",
+        "required": ["token", "password"],
+        "properties": {
+          "password": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          }
+        }
+      },
+      "Config": {
+        "type": "object",
+        "required": ["services"],
+        "properties": {
+          "access_control": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/AccessControl"
+              }
+            ]
+          },
+          "limits": {
+            "type": ["array", "null"],
+            "items": {
+              "$ref": "#/components/schemas/Limit"
+            }
+          },
+          "mtls": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/MtlsConfig"
+              }
+            ]
+          },
+          "services": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Service"
+            }
+          }
+        }
+      },
+      "Endpoint": {
+        "type": "object",
+        "required": ["host"],
+        "properties": {
+          "host": {
+            "type": "string"
+          },
+          "path": {
+            "type": ["string", "null"]
+          },
+          "port": {
+            "type": ["integer", "null"],
+            "format": "int32"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["message", "code", "type", "link"],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "link": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "ForgotPasswordRequestBody": {
+        "type": "object",
+        "required": ["email"],
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        }
+      },
+      "Health": {
+        "type": "object",
+        "required": ["name", "version"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        }
+      },
+      "Limit": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Strategy"
+          },
+          {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "LivenessProbe": {
+        "type": "object",
+        "required": ["path"],
+        "properties": {
+          "interval": {
+            "type": ["string", "null"]
+          },
+          "path": {
+            "type": "string"
+          },
+          "timeout": {
+            "type": ["string", "null"]
+          }
+        }
+      },
+      "LoadBalancer": {
+        "type": "object",
+        "required": ["strategy"],
+        "properties": {
+          "liveness_probe": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/LivenessProbe"
+              }
+            ]
+          },
+          "strategy": {
+            "$ref": "#/components/schemas/LoadBalancerStrategy"
+          }
+        }
+      },
+      "LoadBalancerStrategy": {
+        "type": "string",
+        "enum": ["round_robin", "random", "ip_hash"]
+      },
+      "MtlsConfig": {
+        "type": "object",
+        "required": ["ca_cert_path", "client_cert_path", "client_key_path"],
+        "properties": {
+          "ca_cert_path": {
+            "type": "string"
+          },
+          "client_cert_path": {
+            "type": "string"
+          },
+          "client_key_path": {
+            "type": "string"
+          }
+        }
+      },
+      "Protocol": {
+        "type": "string",
+        "enum": ["http", "https", "ws", "wss"]
+      },
+      "RefreshTokenRequestBody": {
+        "type": "object",
+        "required": ["refresh_token"],
+        "properties": {
+          "refresh_token": {
+            "type": "string"
+          }
+        }
+      },
+      "Route": {
+        "type": "object",
+        "required": ["path", "method"],
+        "properties": {
+          "auth_required": {
+            "type": ["boolean", "null"]
+          },
+          "method": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "resource": {
+            "type": ["string", "null"]
+          }
+        }
+      },
+      "Service": {
+        "type": "object",
+        "required": ["name", "path", "endpoints"],
+        "properties": {
+          "auth_required": {
+            "type": ["boolean", "null"]
+          },
+          "connect_timeout": {
+            "type": ["integer", "null"],
+            "format": "int64",
+            "minimum": 0
+          },
+          "endpoints": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Endpoint"
+            }
+          },
+          "load_balancer": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/LoadBalancer"
+              }
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "protocol": {
+            "$ref": "#/components/schemas/Protocol"
+          },
+          "resource": {
+            "type": ["string", "null"]
+          },
+          "routes": {
+            "type": ["array", "null"],
+            "items": {
+              "$ref": "#/components/schemas/Route"
+            }
+          }
+        }
+      },
+      "SignupCompleteRequestBody": {
+        "type": "object",
+        "required": [
+          "token",
+          "givenName",
+          "familyName",
+          "nickname",
+          "password"
+        ],
+        "properties": {
+          "familyName": {
+            "type": "string"
+          },
+          "givenName": {
+            "type": "string"
+          },
+          "nickname": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "phoneNumber": {
+            "type": ["string", "null"]
+          },
+          "token": {
+            "type": "string"
+          }
+        }
+      },
+      "SignupRequestBody": {
+        "type": "object",
+        "required": ["email"],
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        }
+      },
+      "Strategy": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["params", "strategy"],
+            "properties": {
+              "params": {
+                "type": "object",
+                "required": ["max_burst", "replenish_1_per"],
+                "properties": {
+                  "max_burst": {
+                    "type": "integer",
+                    "format": "int32",
+                    "minimum": 0
+                  },
+                  "replenish_1_per": {
+                    "type": "string"
+                  }
+                }
+              },
+              "strategy": {
+                "type": "string",
+                "enum": ["gcra"]
+              }
+            }
+          }
+        ]
+      },
+      "User": {
+        "type": "object",
+        "required": ["id", "accountId", "email", "attrs"],
+        "properties": {
+          "accountId": {
+            "type": "string"
+          },
+          "attrs": {},
+          "email": {
+            "type": "string"
+          },
+          "familyName": {
+            "type": ["string", "null"]
+          },
+          "givenName": {
+            "type": ["string", "null"]
+          },
+          "id": {
+            "type": "string"
+          },
+          "nickname": {
+            "type": ["string", "null"]
+          },
+          "phoneNumber": {
+            "type": ["string", "null"]
+          },
+          "picture": {
+            "type": ["string", "null"]
+          }
+        }
+      },
+      "UserCredentials": {
+        "type": "object",
+        "required": ["username", "password"],
+        "properties": {
+          "password": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

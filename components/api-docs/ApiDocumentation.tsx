@@ -2,6 +2,7 @@
 
 import {
   Box,
+  Card,
   Container,
   Stack,
   LoadingOverlay,
@@ -26,6 +27,7 @@ import { groupByTags } from "@/utils/openapi-helpers";
 import CodeBox from "./CodeBox";
 import { useMemo } from "react";
 import styles from "./styles.module.css";
+import { SchemaViewer } from "./SchemaViewer";
 
 interface ApiDocumentationProps {
   spec: OpenAPISpec | null;
@@ -129,11 +131,11 @@ export function ApiDocumentation({
           height: "100%",
         }}
       >
-        <Container size="xl" py="xl">
+        <Container size="xl" p={0}>
           <Stack gap="xl">
             <ApiHeader info={spec.info} servers={spec.servers} />
 
-            <Tabs defaultValue="endpoints" variant="outline">
+            <Tabs defaultValue="endpoints" variant="default">
               <Tabs.List>
                 <Tabs.Tab
                   value="endpoints"
@@ -172,7 +174,7 @@ export function ApiDocumentation({
 
                       return (
                         <Box key={tag}>
-                          <Paper p="md" mb="md" withBorder>
+                          <Box p="md" mb="md">
                             <Text size="xl" fw={700} mb="xs">
                               {tag}
                             </Text>
@@ -181,9 +183,9 @@ export function ApiDocumentation({
                                 {tagInfo.description}
                               </Text>
                             )}
-                          </Paper>
+                          </Box>
 
-                          <Stack gap="md">
+                          <Stack gap="xl">
                             {endpoints.map(
                               (
                                 endpoint: {
@@ -228,12 +230,13 @@ export function ApiDocumentation({
                   {spec.components?.schemas ? (
                     Object.entries(spec.components.schemas).map(
                       ([schemaName, schema]) => (
-                        <Paper
-                          key={schemaName}
+                        <Card
+                          m="sm"
                           shadow="sm"
-                          p="lg"
-                          radius="md"
                           withBorder
+                          radius="sm"
+                          key={schemaName}
+                          className={styles.schemaCard}
                         >
                           <Text size="lg" fw={600} mb="md" c="blue">
                             {schemaName}
@@ -244,16 +247,17 @@ export function ApiDocumentation({
                             </Text>
                           )}
                           <Box>
-                            <Text size="xs" fw={600} c="dimmed" mb="sm">
+                            <SchemaViewer schema={schema} spec={spec} />
+                            {/*<Text size="xs" fw={600} c="dimmed" mb="sm">
                               Schema Definition
                             </Text>
                             <Box component="pre" style={{ overflow: "auto" }}>
                               <CodeBox
                                 value={JSON.stringify(schema, null, 2)}
                               />
-                            </Box>
+                            </Box>*/}
                           </Box>
-                        </Paper>
+                        </Card>
                       ),
                     )
                   ) : (
