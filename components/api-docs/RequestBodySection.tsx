@@ -1,6 +1,7 @@
 "use client";
 
-import { Box, Text, Stack, Code, Tabs } from "@mantine/core";
+import { Box, Text, Stack, Code, Tabs, SegmentedControl } from "@mantine/core";
+import { useState } from "react";
 import { RequestBody, OpenAPISpec, Schema } from "@/types/openapi";
 import { SchemaViewer } from "./SchemaViewer";
 import { extractSchemaExample, formatJson } from "@/utils/openapi-helpers";
@@ -88,74 +89,87 @@ function SingleContentType({
   mediaType,
   spec,
 }: SingleContentTypeProps) {
+  const [view, setView] = useState<string>("schema");
+
+  const hasSchema = !!mediaType.schema;
+  const hasExamples =
+    mediaType.example !== undefined ||
+    (mediaType.examples && Object.keys(mediaType.examples).length > 0) ||
+    (mediaType.schema && spec);
+
   return (
     <Stack gap="md">
       {contentType.length === 1 && <Code>{contentType}</Code>}
 
-      {mediaType.schema && (
-        <Box p="md">
-          <Text size="xs" fw={600} mb="sm" c="dimmed">
-            Schema
-          </Text>
-          <SchemaViewer schema={mediaType.schema} spec={spec} />
-        </Box>
-      )}
-
-      {mediaType.example !== undefined && (
+      {hasSchema && hasExamples && (
         <Box>
-          <Text size="xs" fw={600} mb="xs" c="dimmed">
-            Example Request Body
-          </Text>
-          <CodeBox value={formatJson(mediaType.example)} />
-        </Box>
-      )}
-
-      {!mediaType.example && mediaType.schema && spec && (
-        <Box>
-          <Text size="xs" fw={600} mb="xs" c="dimmed">
-            Example Request Body
-          </Text>
-          <CodeBox
-            value={formatJson(extractSchemaExample(mediaType.schema, spec))}
+          <SegmentedControl
+            value={view}
+            onChange={setView}
+            size="xs"
+            data={[
+              { label: "Schema", value: "schema" },
+              { label: "Examples", value: "examples" },
+            ]}
           />
         </Box>
       )}
 
-      {mediaType.examples && Object.keys(mediaType.examples).length > 0 && (
-        <Box>
-          <Text size="xs" fw={600} mb="xs" c="dimmed">
-            Examples
-          </Text>
-          <Stack gap="xs">
-            {Object.entries(mediaType.examples).map(
-              ([exampleName, example]: [string, unknown]) => {
-                const exampleObj = example as {
-                  summary?: string;
-                  description?: string;
-                  value?: unknown;
-                };
-                return (
-                  <Box key={exampleName}>
-                    <Text size="xs" fw={500} c="blue" mb={4}>
-                      {exampleName}
-                    </Text>
-                    {exampleObj.summary && (
-                      <Text size="xs" c="dimmed" mb={4}>
-                        {exampleObj.summary}
-                      </Text>
-                    )}
-                    {exampleObj.description && (
-                      <Text size="xs" c="dimmed" mb={4}>
-                        {exampleObj.description}
-                      </Text>
-                    )}
-                    <CodeBox value={formatJson(exampleObj.value || example)} />
-                  </Box>
-                );
-              },
-            )}
-          </Stack>
-        </Box>
+      {view === "schema" && mediaType.schema && (
+        <SchemaViewer schema={mediaType.schema} spec={spec} />
+      )}
+
+      {view === "examples" && (
+        <>
+          {mediaType.example !== undefined && (
+            <CodeBox value={formatJson(mediaType.example)} />
+          )}
+
+          {!mediaType.example && mediaType.schema && spec && (
+            <CodeBox
+              value={formatJson(extractSchemaExample(mediaType.schema, spec))}
+            />
+          )}
+
+          {mediaType.examples && Object.keys(mediaType.examples).length > 0 && (
+            <Box>
+              <Text size="xs" fw={600} mb="xs" c="dimmed">
+                Examples
+              </Text>
+              <Stack gap="xs">
+                {Object.entries(mediaType.examples).map(
+                  ([exampleName, example]: [string, unknown]) => {
+                    const exampleObj = example as {
+                      summary?: string;
+                      description?: string;
+                      value?: unknown;
+                    };
+                    return (
+                      <Box key={exampleName}>
+                        <Text size="xs" fw={500} c="blue" mb={4}>
+                          {exampleName}
+                        </Text>
+                        {exampleObj.summary && (
+                          <Text size="xs" c="dimmed" mb={4}>
+                            {exampleObj.summary}
+                          </Text>
+                        )}
+                        {exampleObj.description && (
+                          <Text size="xs" c="dimmed" mb={4}>
+                            {exampleObj.description}
+                          </Text>
+                        )}
+                        <CodeBox
+                          value={formatJson(exampleObj.value || example)}
+                        />
+                      </Box>
+                    );
+                  },
+                )}
+              </Stack>
+            </Box>
+          )}
+        </>
       )}
     </Stack>
   );

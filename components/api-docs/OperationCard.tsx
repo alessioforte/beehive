@@ -12,6 +12,7 @@ import {
   ActionIcon,
   Tooltip,
 } from "@mantine/core";
+import ReactMarkdown from "react-markdown";
 import { IconCheck, IconCopy } from "@tabler/icons-react";
 import { Operation, OpenAPISpec } from "@/types/openapi";
 import { MethodBadge } from "./MethodBadge";
@@ -99,9 +100,7 @@ export function OperationCard({
           operation.description !== operation.summary && (
             <>
               <Divider />
-              <Text size="sm" style={{ whiteSpace: "pre-wrap" }}>
-                {operation.description}
-              </Text>
+              <ReactMarkdown>{operation.description}</ReactMarkdown>
             </>
           )}
 

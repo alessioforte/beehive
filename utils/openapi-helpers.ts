@@ -2,8 +2,8 @@ import { Schema, OpenAPISpec, Operation } from "@/types/openapi";
 
 export function getMethodColor(method: string): string {
   const colors: Record<string, string> = {
-    get: "blue",
-    post: "green",
+    get: "green",
+    post: "blue",
     put: "orange",
     delete: "red",
     patch: "violet",
