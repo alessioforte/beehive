@@ -43,34 +43,16 @@ export function ResponsesSection({ responses, spec }: ResponsesSectionProps) {
                 </Accordion.Control>
                 <Accordion.Panel>
                   <Stack gap="md">
-                    {response.description && (
-                      <Box>
-                        <Text size="sm" fw={500} mb="xs">
-                          Description
-                        </Text>
-                        <Text size="sm" c="dimmed">
-                          {response.description}
-                        </Text>
-                      </Box>
-                    )}
-
                     {response.content &&
                       Object.keys(response.content).length > 0 && (
                         <Box>
-                          <Text size="sm" fw={500} mb="xs">
-                            Content Types
-                          </Text>
                           <Stack gap="md">
                             {Object.entries(response.content).map(
                               ([contentType, mediaType]) => (
                                 <Box key={contentType}>
                                   <Code mb="xs">{contentType}</Code>
                                   {mediaType.schema && (
-                                    <Box
-                                      mt="sm"
-                                      p="md"
-                                      className={styles.schemaBox}
-                                    >
+                                    <Box mt="lg">
                                       <Text
                                         size="xs"
                                         fw={600}

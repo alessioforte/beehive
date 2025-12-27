@@ -278,13 +278,17 @@ const FieldArrayViewer = ({
         <FieldHeader
           name={name}
           type="array"
-          description={schema.description}
           required={required}
           expandable={!isPrimitiveType(itemsSchema.type)}
           expanded={expanded}
           onToggle={() => setExpanded(!expanded)}
         />
         <TypeBadge type={getSchemaType(itemsSchema, spec)} />
+        {schema.description && (
+          <Text size="xs" c="dimmed" lineClamp={1}>
+            {schema.description}
+          </Text>
+        )}
       </Group>
       {!isPrimitiveType(itemsSchema.type) && (
         <Collapse in={expanded}>

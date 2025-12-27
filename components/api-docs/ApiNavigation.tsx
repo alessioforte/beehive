@@ -88,7 +88,7 @@ export function ApiNavigation({ spec, onNavigate }: ApiNavigationProps) {
         const targetScroll =
           scrollContainer.scrollTop +
           (elementRect.top - containerRect.top) -
-          20;
+          15;
 
         // Scroll to the calculated position
         scrollContainer.scrollTo({
@@ -97,7 +97,10 @@ export function ApiNavigation({ spec, onNavigate }: ApiNavigationProps) {
         });
       } else {
         // Fallback to default behavior
-        element.scrollIntoView({ behavior: "smooth", block: "start" });
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
       }
     }
 

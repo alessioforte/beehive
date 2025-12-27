@@ -10,7 +10,6 @@ import {
   Button,
   Tabs,
   Text,
-  Paper,
   ScrollArea,
 } from "@mantine/core";
 import {
@@ -24,7 +23,6 @@ import { ApiHeader } from "./ApiHeader";
 import { ApiNavigation } from "./ApiNavigation";
 import { OperationCard } from "./OperationCard";
 import { groupByTags } from "@/utils/openapi-helpers";
-import CodeBox from "./CodeBox";
 import { useMemo } from "react";
 import styles from "./styles.module.css";
 import { SchemaViewer } from "./SchemaViewer";
@@ -125,11 +123,8 @@ export function ApiDocumentation({
       </Box>
 
       <ScrollArea
-        style={{
-          flex: 1,
-          overflow: "auto",
-          height: "100%",
-        }}
+        viewportProps={{ id: "api-content-scroll-container" }}
+        style={{ flex: 1, overflow: "auto", height: "100%" }}
       >
         <Container size="xl" p={0}>
           <Stack gap="xl">
