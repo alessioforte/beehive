@@ -23,7 +23,6 @@ export default function Home() {
     <Box
       style={{
         minHeight: "100vh",
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -33,10 +32,10 @@ export default function Home() {
         <ColorSchemeToggle theme={theme} onClick={setTheme} />
       </Box>
       <Container size="md">
-        <Paper shadow="xl" p="xl" radius="lg" style={{ textAlign: "center" }}>
+        <Paper p="xl" radius="lg" style={{ textAlign: "center" }}>
           <Stack gap="xl" align="center">
             <Box>
-              <IconRocket size={80} stroke={1.5} color="#667eea" />
+              <IconRocket size={80} stroke={1.5} color="orange" />
             </Box>
 
             <Box>
@@ -51,10 +50,10 @@ export default function Home() {
             <Group gap="md" mt="lg">
               <Button
                 size="lg"
+                variant="gradient"
                 leftSection={<IconBook size={20} />}
                 onClick={() => router.push("/api-docs")}
-                variant="gradient"
-                gradient={{ from: "blue", to: "cyan" }}
+                gradient={{ from: "orange", to: "yellow" }}
               >
                 View API Docs
               </Button>

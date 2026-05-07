@@ -1,7 +1,5 @@
 import { createTheme } from "@mantine/core";
 
-const theme = createTheme({
-  /** Put your mantine theme override here */
-});
+const theme = createTheme({});
 
 export default theme;

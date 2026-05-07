@@ -2,6 +2,10 @@ import { create, StateCreator } from "zustand";
 import { devtools } from "zustand/middleware";
 import { load as loadYaml } from "js-yaml";
 import { State, Actions } from "./types";
+import {
+  isSwagger2,
+  convertSwagger2ToOpenAPI3,
+} from "@/utils/swagger-converter";
 
 const initialState: State = {
   loading: false,
@@ -53,6 +57,11 @@ export const store: StateCreator<State & Actions> = (set) => ({
         }
       }
 
+      // Convert Swagger 2.0 specs to OpenAPI 3.0 so rendering components work
+      if (isSwagger2(data)) {
+        data = convertSwagger2ToOpenAPI3(data);
+      }
+
       set({ openAPISpec: data, openAPILoading: false });
     } catch (err) {
       const errorMessage =
@@ -96,6 +105,11 @@ export const store: StateCreator<State & Actions> = (set) => ({
         } catch {
           data = loadYaml(text);
         }
+      }
+
+      // Convert Swagger 2.0 specs to OpenAPI 3.0 so rendering components work
+      if (isSwagger2(data)) {
+        data = convertSwagger2ToOpenAPI3(data);
       }
 
       set({ openAPISpec: data, openAPILoading: false });

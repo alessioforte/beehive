@@ -8,10 +8,15 @@ import {
   Group,
   Collapse,
   Center,
+  Badge,
 } from "@mantine/core";
 import { useState } from "react";
 import { Schema, OpenAPISpec } from "@/types/openapi";
-import { IconChevronDown, IconChevronRight } from "@tabler/icons-react";
+import {
+  IconChevronDown,
+  IconChevronRight,
+  IconArrowIteration,
+} from "@tabler/icons-react";
 import {
   getSchemaType,
   resolveRef,
@@ -28,6 +33,7 @@ interface SchemaViewerProps {
   level?: number;
   name?: string;
   required?: boolean;
+  visitedRefs?: Set<string>;
 }
 
 interface FieldHeaderProps {
@@ -108,12 +114,50 @@ const FieldHeader = ({
   return content;
 };
 
+/**
+ * Small helper that renders a "circular reference" indicator instead of
+ * recursing infinitely when we detect a $ref we have already visited in
+ * the current render branch.
+ */
+const CircularRefBadge = ({
+  refPath,
+  name,
+  indent = 0,
+}: {
+  refPath: string;
+  name?: string;
+  indent?: number;
+}) => {
+  const refName = refPath.split("/").pop() || refPath;
+  return (
+    <Box pl={indent}>
+      <Group gap={5} wrap="nowrap">
+        <Center w={14} h={14} />
+        {name && (
+          <Text size="sm" fw={500} c="blue">
+            {name}:
+          </Text>
+        )}
+        <Badge
+          size="sm"
+          variant="light"
+          color="orange"
+          leftSection={<IconArrowIteration size={12} />}
+        >
+          {refName} (circular)
+        </Badge>
+      </Group>
+    </Box>
+  );
+};
+
 export function SchemaViewer({
   schema,
   spec,
   level = 0,
   name,
   required = false,
+  visitedRefs = new Set(),
 }: SchemaViewerProps) {
   const [expanded, setExpanded] = useState(level < 2);
 
@@ -127,8 +171,21 @@ export function SchemaViewer({
 
   // Handle $ref
   if (schema.$ref && spec) {
+    // Circular reference detected – stop recursing
+    if (visitedRefs.has(schema.$ref)) {
+      return (
+        <CircularRefBadge
+          refPath={schema.$ref}
+          name={name}
+          indent={level * INDENT_SIZE}
+        />
+      );
+    }
+
     const resolved = resolveRef(schema.$ref, spec);
     if (resolved) {
+      const nextVisited = new Set(visitedRefs);
+      nextVisited.add(schema.$ref);
       return (
         <SchemaViewer
           schema={resolved}
@@ -136,6 +193,7 @@ export function SchemaViewer({
           level={level}
           name={name}
           required={required}
+          visitedRefs={nextVisited}
         />
       );
     }
@@ -150,6 +208,7 @@ export function SchemaViewer({
         level={level}
         name={name}
         required={required}
+        visitedRefs={visitedRefs}
       />
     );
   }
@@ -163,6 +222,7 @@ export function SchemaViewer({
         level={level}
         name={name}
         required={required}
+        visitedRefs={visitedRefs}
       />
     );
   }
@@ -176,6 +236,7 @@ export function SchemaViewer({
         level={level}
         name={name}
         required={required}
+        visitedRefs={visitedRefs}
       />
     );
   }
@@ -195,6 +256,7 @@ export function SchemaViewer({
         level={level}
         name={name}
         required={required}
+        visitedRefs={visitedRefs}
       />
     );
   }
@@ -227,6 +289,7 @@ export function SchemaViewer({
                       level={level + 1}
                       name={propName}
                       required={isRequired}
+                      visitedRefs={visitedRefs}
                     />
                   );
                 },
@@ -263,14 +326,80 @@ const FieldArrayViewer = ({
   level = 0,
   name,
   required = false,
+  visitedRefs = new Set(),
 }: SchemaViewerProps) => {
+  let itemsSchema = schema.items as Schema;
+
+  if (itemsSchema.$ref && spec) {
+    // Circular reference in array items
+    if (visitedRefs.has(itemsSchema.$ref)) {
+      const indent = level * INDENT_SIZE;
+      return (
+        <Box pl={indent}>
+          <Group gap={0} wrap="nowrap">
+            <FieldHeader name={name} type="array" required={required} />
+            <CircularRefBadge refPath={itemsSchema.$ref} />
+          </Group>
+        </Box>
+      );
+    }
+    const resolved = resolveRef(itemsSchema.$ref, spec);
+    if (resolved) {
+      // We don't add to visitedRefs here because the resolution happens
+      // at the array-items level; the children will track it when they
+      // encounter their own $ref.
+      const nextVisited = new Set(visitedRefs);
+      nextVisited.add(itemsSchema.$ref);
+      itemsSchema = resolved;
+      // Use nextVisited for children below
+      return (
+        <FieldArrayViewerResolved
+          schema={schema}
+          itemsSchema={itemsSchema}
+          spec={spec}
+          level={level}
+          name={name}
+          required={required}
+          visitedRefs={nextVisited}
+        />
+      );
+    }
+  }
+
+  return (
+    <FieldArrayViewerResolved
+      schema={schema}
+      itemsSchema={itemsSchema}
+      spec={spec}
+      level={level}
+      name={name}
+      required={required}
+      visitedRefs={visitedRefs}
+    />
+  );
+};
+
+interface FieldArrayViewerResolvedProps {
+  schema: Schema;
+  itemsSchema: Schema;
+  spec?: OpenAPISpec;
+  level: number;
+  name?: string;
+  required?: boolean;
+  visitedRefs: Set<string>;
+}
+
+const FieldArrayViewerResolved = ({
+  schema,
+  itemsSchema,
+  spec,
+  level,
+  name,
+  required = false,
+  visitedRefs,
+}: FieldArrayViewerResolvedProps) => {
   const indent = level * INDENT_SIZE;
   const [expanded, setExpanded] = useState(false);
-
-  let itemsSchema = schema.items as Schema;
-  if (itemsSchema.$ref && spec) {
-    itemsSchema = resolveRef(itemsSchema.$ref, spec) as Schema;
-  }
 
   return (
     <Box pl={indent}>
@@ -297,7 +426,7 @@ const FieldArrayViewer = ({
               Object.entries(itemsSchema.properties).map(
                 ([propName, propSchema]) => {
                   const isRequired =
-                    schema.required?.includes(propName) || false;
+                    itemsSchema.required?.includes(propName) || false;
                   return (
                     <SchemaViewer
                       key={propName}
@@ -306,6 +435,7 @@ const FieldArrayViewer = ({
                       level={level + 1}
                       name={propName}
                       required={isRequired}
+                      visitedRefs={visitedRefs}
                     />
                   );
                 },
@@ -313,12 +443,12 @@ const FieldArrayViewer = ({
             {itemsSchema.allOf &&
               itemsSchema.allOf.map((subSchema, index) => (
                 <Box key={index}>
-                  {/*{index > 0 && <Divider my="xs" />}*/}
                   <SchemaViewer
                     schema={subSchema as Schema}
                     spec={spec}
                     level={level}
                     required={false}
+                    visitedRefs={visitedRefs}
                   />
                 </Box>
               ))}
@@ -335,6 +465,7 @@ const OneOfViewer = ({
   level = 0,
   name,
   required = false,
+  visitedRefs = new Set(),
 }: SchemaViewerProps) => {
   const indent = level * INDENT_SIZE;
   const [expanded, setExpanded] = useState(level < 2);
@@ -345,7 +476,19 @@ const OneOfViewer = ({
   let selectedSchema = schema.oneOf[selectedOption] as Schema;
 
   if (selectedSchema.$ref && spec) {
-    selectedSchema = resolveRef(selectedSchema.$ref, spec) as Schema;
+    if (visitedRefs.has(selectedSchema.$ref)) {
+      return (
+        <CircularRefBadge
+          refPath={selectedSchema.$ref}
+          name={name}
+          indent={indent}
+        />
+      );
+    }
+    const resolved = resolveRef(selectedSchema.$ref, spec);
+    if (resolved) {
+      selectedSchema = resolved;
+    }
   }
 
   const schemaTypes = schema.oneOf.map((subSchema) =>
@@ -387,6 +530,7 @@ const OneOfViewer = ({
                     level={level + 1}
                     name={propName}
                     required={isRequired}
+                    visitedRefs={visitedRefs}
                   />
                 );
               },
@@ -404,6 +548,7 @@ const AnyOfViewer = ({
   level = 0,
   name,
   required = false,
+  visitedRefs = new Set(),
 }: SchemaViewerProps) => {
   const indent = level * INDENT_SIZE;
   const [expanded, setExpanded] = useState(level < 2);
@@ -436,6 +581,7 @@ const AnyOfViewer = ({
                 spec={spec}
                 level={level + 1}
                 required={false}
+                visitedRefs={visitedRefs}
               />
             </Box>
           ))}
@@ -451,6 +597,7 @@ const AllOfViewer = ({
   level = 0,
   name,
   required = false,
+  visitedRefs = new Set(),
 }: SchemaViewerProps) => {
   const indent = level * INDENT_SIZE;
   const [expanded, setExpanded] = useState(level < 2);
@@ -461,6 +608,7 @@ const AllOfViewer = ({
   const hasCompositions = schema.allOf.some((subSchema) => {
     const s = subSchema as Schema;
     if (s.$ref && spec) {
+      if (visitedRefs.has(s.$ref)) return false;
       const resolved = resolveRef(s.$ref, spec);
       return resolved && (resolved.oneOf || resolved.anyOf);
     }
@@ -471,15 +619,6 @@ const AllOfViewer = ({
   if (hasCompositions) {
     return (
       <Box pl={indent}>
-        {/*<FieldHeader
-          name={name}
-          type="allOf"
-          description={schema.description}
-          required={required}
-          expandable={true}
-          expanded={expanded}
-          onToggle={() => setExpanded(!expanded)}
-        />*/}
         <Collapse in={expanded}>
           <Stack gap="sm" mt="xs">
             <Text size="xs" c="dimmed">
@@ -487,12 +626,12 @@ const AllOfViewer = ({
             </Text>
             {schema.allOf.map((subSchema, index) => (
               <Box key={index}>
-                {/*{index > 0 && <Divider my="xs" />}*/}
                 <SchemaViewer
                   schema={subSchema as Schema}
                   spec={spec}
                   level={level}
                   required={false}
+                  visitedRefs={visitedRefs}
                 />
               </Box>
             ))}
@@ -529,6 +668,7 @@ const AllOfViewer = ({
                   level={level + 1}
                   name={propName}
                   required={isRequired}
+                  visitedRefs={visitedRefs}
                 />
               );
             })}

@@ -1,6 +1,7 @@
 export { ApiDocumentation } from "./ApiDocumentation";
 export { ApiHeader } from "./ApiHeader";
 export { ApiNavigation } from "./ApiNavigation";
+export { ApiTesterDrawer } from "./ApiTesterDrawer";
 export { MethodBadge } from "./MethodBadge";
 export { OperationCard } from "./OperationCard";
 export { ParametersTable } from "./ParametersTable";

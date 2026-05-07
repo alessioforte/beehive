@@ -8,12 +8,15 @@ interface CodeBoxProps {
   language?: "json" | "javascript" | "typescript" | "python" | "html" | "css";
   readOnly?: boolean;
   height?: number | string;
+  onChange?: (value: string) => void;
 }
 
 export default function CodeBox({
   value,
   language = "json",
   readOnly = true,
+  height,
+  onChange,
 }: CodeBoxProps) {
   const theme = useMantineColorScheme();
 
@@ -21,7 +24,6 @@ export default function CodeBox({
     switch (language) {
       case "json":
         return json();
-      // Add more cases for other languages if needed
       default:
         return json();
     }
@@ -31,13 +33,15 @@ export default function CodeBox({
     <CodeMirror
       style={{ fontSize: 12 }}
       value={value}
+      height={height ? String(height) : undefined}
       extensions={[getLanguageExtension()]}
       theme={theme.colorScheme === "dark" ? vscodeDark : vscodeLight}
       readOnly={readOnly}
+      onChange={onChange}
       basicSetup={{
         lineNumbers: true,
-        highlightActiveLine: false,
-        highlightActiveLineGutter: false,
+        highlightActiveLine: !readOnly,
+        highlightActiveLineGutter: !readOnly,
       }}
     />
   );

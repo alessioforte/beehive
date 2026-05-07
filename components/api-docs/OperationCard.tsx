@@ -11,9 +11,10 @@ import {
   CopyButton,
   ActionIcon,
   Tooltip,
+  Button,
 } from "@mantine/core";
 import ReactMarkdown from "react-markdown";
-import { IconCheck, IconCopy } from "@tabler/icons-react";
+import { IconCheck, IconCopy, IconPlayerPlay } from "@tabler/icons-react";
 import { Operation, OpenAPISpec } from "@/types/openapi";
 import { MethodBadge } from "./MethodBadge";
 import { ParametersTable } from "./ParametersTable";
@@ -26,6 +27,7 @@ interface OperationCardProps {
   method: string;
   operation: Operation;
   spec?: OpenAPISpec;
+  onTryIt?: () => void;
 }
 
 export function OperationCard({
@@ -33,6 +35,7 @@ export function OperationCard({
   method,
   operation,
   spec,
+  onTryIt,
 }: OperationCardProps) {
   const pathId = `${method}-${path}`.replace(/[^a-zA-Z0-9]/g, "-");
 
@@ -89,11 +92,23 @@ export function OperationCard({
             </Box>
           </Group>
 
-          {operation.deprecated && (
-            <Badge color="orange" variant="filled">
-              Deprecated
-            </Badge>
-          )}
+          <Group gap="sm">
+            {operation.deprecated && (
+              <Badge color="orange" variant="filled">
+                Deprecated
+              </Badge>
+            )}
+            {onTryIt && (
+              <Button
+                size="xs"
+                variant="light"
+                leftSection={<IconPlayerPlay size={14} />}
+                onClick={onTryIt}
+              >
+                Try It
+              </Button>
+            )}
+          </Group>
         </Group>
 
         {operation.description &&

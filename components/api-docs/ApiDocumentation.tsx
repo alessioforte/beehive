@@ -22,8 +22,9 @@ import { OpenAPISpec, Operation } from "@/types/openapi";
 import { ApiHeader } from "./ApiHeader";
 import { ApiNavigation } from "./ApiNavigation";
 import { OperationCard } from "./OperationCard";
+import { ApiTesterDrawer } from "./ApiTesterDrawer";
 import { groupByTags } from "@/utils/openapi-helpers";
-import { useMemo } from "react";
+import { useMemo, useState, useCallback } from "react";
 import styles from "./styles.module.css";
 import { SchemaViewer } from "./SchemaViewer";
 
@@ -60,6 +61,25 @@ export function ApiDocumentation({
     });
     return count;
   }, [spec]);
+
+  const [drawerOpened, setDrawerOpened] = useState(false);
+  const [selectedEndpoint, setSelectedEndpoint] = useState<{
+    path: string;
+    method: string;
+    operation: Operation;
+  } | null>(null);
+
+  const handleTryIt = useCallback(
+    (path: string, method: string, operation: Operation) => {
+      setSelectedEndpoint({ path, method, operation });
+      setDrawerOpened(true);
+    },
+    [],
+  );
+
+  const handleCloseDrawer = useCallback(() => {
+    setDrawerOpened(false);
+  }, []);
 
   // Loading state
   if (loading) {
@@ -201,6 +221,13 @@ export function ApiDocumentation({
                                     method={endpoint.method}
                                     operation={endpoint.operation}
                                     spec={spec}
+                                    onTryIt={() =>
+                                      handleTryIt(
+                                        endpoint.path,
+                                        endpoint.method,
+                                        endpoint.operation,
+                                      )
+                                    }
                                   />
                                 </Box>
                               ),
@@ -266,6 +293,18 @@ export function ApiDocumentation({
           </Stack>
         </Container>
       </ScrollArea>
+
+      {selectedEndpoint && spec.servers && spec.servers.length > 0 && (
+        <ApiTesterDrawer
+          opened={drawerOpened}
+          onClose={handleCloseDrawer}
+          path={selectedEndpoint.path}
+          method={selectedEndpoint.method}
+          operation={selectedEndpoint.operation}
+          spec={spec}
+          servers={spec.servers}
+        />
+      )}
     </Box>
   );
 }
