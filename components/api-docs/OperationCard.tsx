@@ -10,10 +10,18 @@ import {
   ActionIcon,
   Tooltip,
   Button,
+  Collapse,
 } from "@mantine/core";
 import ReactMarkdown from "react-markdown";
-import { IconCheck, IconCopy, IconPlayerPlay } from "@tabler/icons-react";
+import {
+  IconCheck,
+  IconChevronDown,
+  IconCopy,
+  IconPlayerPlay,
+} from "@tabler/icons-react";
+import { memo } from "react";
 import { Operation, OpenAPISpec } from "@/types/openapi";
+import { getOperationPathId } from "@/utils/openapi-helpers";
 import { MethodBadge } from "./MethodBadge";
 import { ParametersTable } from "./ParametersTable";
 import { RequestBodySection } from "./RequestBodySection";
@@ -24,18 +32,23 @@ interface OperationCardProps {
   path: string;
   method: string;
   operation: Operation;
+  opened: boolean;
+  onToggle: (pathId: string) => void;
   spec?: OpenAPISpec;
-  onTryIt?: () => void;
+  onTryIt?: (path: string, method: string, operation: Operation) => void;
 }
 
-export function OperationCard({
+export const OperationCard = memo(function OperationCard({
   path,
   method,
   operation,
+  opened,
+  onToggle,
   spec,
   onTryIt,
 }: OperationCardProps) {
-  const pathId = `${method}-${path}`.replace(/[^a-zA-Z0-9]/g, "-");
+  const pathId = getOperationPathId(path, method);
+  const detailsId = `${pathId}-details`;
 
   return (
     <Card
@@ -47,7 +60,7 @@ export function OperationCard({
       style={{ scrollMarginTop: "80px" }}
       className={styles.operationCard}
     >
-      <Stack gap="md">
+      <>
         <Group justify="space-between" wrap="nowrap">
           <Group gap="md" wrap="nowrap" style={{ flex: 1, minWidth: 0 }}>
             <Box style={{ flex: 1, minWidth: 0 }}>
@@ -101,74 +114,101 @@ export function OperationCard({
                 size="xs"
                 variant="light"
                 leftSection={<IconPlayerPlay size={14} />}
-                onClick={onTryIt}
+                onClick={() => onTryIt(path, method, operation)}
               >
                 Try It
               </Button>
             )}
+            <Tooltip label={opened ? "Collapse operation" : "Expand operation"}>
+              <ActionIcon
+                variant="subtle"
+                size="lg"
+                aria-expanded={opened}
+                aria-controls={detailsId}
+                aria-label={
+                  opened
+                    ? "Collapse operation details"
+                    : "Expand operation details"
+                }
+                onClick={() => onToggle(pathId)}
+              >
+                <IconChevronDown
+                  size={18}
+                  className={styles.operationChevron}
+                  data-opened={opened || undefined}
+                />
+              </ActionIcon>
+            </Tooltip>
           </Group>
         </Group>
 
-        {operation.description &&
-          operation.description !== operation.summary && (
-            <>
-              <Divider />
-              <ReactMarkdown>{operation.description}</ReactMarkdown>
-            </>
-          )}
+        <Collapse expanded={opened} keepMounted={false}>
+          <Stack gap="md" mt="md" id={detailsId}>
+            {operation.description &&
+              operation.description !== operation.summary && (
+                <>
+                  <Divider />
+                  <ReactMarkdown>{operation.description}</ReactMarkdown>
+                </>
+              )}
 
-        {operation.operationId && (
-          <Box>
-            <Text size="xs" c="dimmed" fw={500}>
-              Operation ID:{" "}
-              <Text component="span" ff="monospace">
-                {operation.operationId}
-              </Text>
-            </Text>
-          </Box>
-        )}
+            {operation.operationId && (
+              <Box>
+                <Text size="xs" c="dimmed" fw={500}>
+                  Operation ID:{" "}
+                  <Text component="span" ff="monospace">
+                    {operation.operationId}
+                  </Text>
+                </Text>
+              </Box>
+            )}
 
-        <Divider />
+            <Divider />
 
-        {operation.parameters && operation.parameters.length > 0 && (
-          <ParametersTable parameters={operation.parameters} spec={spec} />
-        )}
+            {operation.parameters && operation.parameters.length > 0 && (
+              <ParametersTable parameters={operation.parameters} spec={spec} />
+            )}
 
-        {operation.requestBody && (
-          <RequestBodySection requestBody={operation.requestBody} spec={spec} />
-        )}
+            {operation.requestBody && (
+              <RequestBodySection
+                requestBody={operation.requestBody}
+                spec={spec}
+              />
+            )}
 
-        {operation.responses && (
-          <ResponsesSection responses={operation.responses} spec={spec} />
-        )}
+            {operation.responses && (
+              <ResponsesSection responses={operation.responses} spec={spec} />
+            )}
 
-        {operation.security && operation.security.length > 0 && (
-          <Box>
-            <Text size="sm" fw={600} mb="sm">
-              Security
-            </Text>
+            {operation.security && operation.security.length > 0 && (
+              <Box>
+                <Text size="sm" fw={600} mb="sm">
+                  Security
+                </Text>
 
-            <Stack gap="xs">
-              {operation.security.map((secReq, index) => (
-                <Box key={index}>
-                  {Object.entries(secReq).map(([name, scopes]) => (
-                    <Group key={name} gap="xs">
-                      <Badge variant="light" color="indigo">
-                        {name}
-                      </Badge>
-                      {scopes.length > 0 && (
-                        <Text size="sm" c="dimmed">
-                          Scopes: {scopes.join(", ")}
-                        </Text>
-                      )}
-                    </Group>
+                <Stack gap="xs">
+                  {operation.security.map((secReq, index) => (
+                    <Box key={index}>
+                      {Object.entries(secReq).map(([name, scopes]) => (
+                        <Group key={name} gap="xs">
+                          <Badge variant="light" color="indigo">
+                            {name}
+                          </Badge>
+                          {scopes.length > 0 && (
+                            <Text size="sm" c="dimmed">
+                              Scopes: {scopes.join(", ")}
+                            </Text>
+                          )}
+                        </Group>
+                      ))}
+                    </Box>
                   ))}
-                </Box>
-              ))}
-            </Stack>
-          </Box>
-        )}
-      </Stack>
+                </Stack>
+              </Box>
+            )}
+          </Stack>
+        </Collapse>
+      </>
     </Card>
   );
-}
+});

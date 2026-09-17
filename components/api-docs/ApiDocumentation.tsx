@@ -21,20 +21,33 @@ import { ApiHeader } from "./ApiHeader";
 import { ApiNavigation } from "./ApiNavigation";
 import { OperationCard } from "./OperationCard";
 import { ApiTesterDrawer } from "./ApiTesterDrawer";
-import { groupByTags } from "@/utils/openapi-helpers";
+import {
+  detectOpenAPISpecSize,
+  getOperationPathId,
+  groupByTags,
+} from "@/utils/openapi-helpers";
 import { useMemo, useState, useCallback } from "react";
 import styles from "./styles.module.css";
 import { SchemaViewer } from "./SchemaViewer";
 
 interface ApiDocumentationProps {
   spec: OpenAPISpec | null;
+  specSourceSize?: number;
   loading?: boolean;
   error?: string | null;
   onRetry?: () => void;
 }
 
+interface OperationExpansionState {
+  spec: OpenAPISpec | null;
+  overrides: Map<string, boolean>;
+}
+
+const EMPTY_OPERATION_OVERRIDES = new Map<string, boolean>();
+
 export function ApiDocumentation({
   spec,
+  specSourceSize = 0,
   loading = false,
   error = null,
   onRetry,
@@ -59,7 +72,19 @@ export function ApiDocumentation({
     return count;
   }, [spec]);
 
+  const specSize = useMemo(
+    () => (spec ? detectOpenAPISpecSize(spec, specSourceSize) : null),
+    [spec, specSourceSize],
+  );
+  const defaultOperationOpened = !specSize?.isLarge;
+
   const [drawerOpened, setDrawerOpened] = useState(false);
+  const [activeTab, setActiveTab] = useState<string | null>("endpoints");
+  const [operationExpansion, setOperationExpansion] =
+    useState<OperationExpansionState>({
+      spec: null,
+      overrides: new Map(),
+    });
   const [selectedEndpoint, setSelectedEndpoint] = useState<{
     path: string;
     method: string;
@@ -77,6 +102,45 @@ export function ApiDocumentation({
   const handleCloseDrawer = useCallback(() => {
     setDrawerOpened(false);
   }, []);
+
+  const handleOperationToggle = useCallback(
+    (pathId: string) => {
+      setOperationExpansion((current) => {
+        const overrides =
+          current.spec === spec ? current.overrides : EMPTY_OPERATION_OVERRIDES;
+        const currentlyOpened = overrides.get(pathId) ?? defaultOperationOpened;
+        const nextOverrides = new Map(overrides);
+        nextOverrides.set(pathId, !currentlyOpened);
+
+        return { spec, overrides: nextOverrides };
+      });
+    },
+    [defaultOperationOpened, spec],
+  );
+
+  const handleNavigate = useCallback(
+    (pathId: string) => {
+      setActiveTab("endpoints");
+      setOperationExpansion((current) => {
+        const overrides =
+          current.spec === spec ? current.overrides : EMPTY_OPERATION_OVERRIDES;
+
+        if ((overrides.get(pathId) ?? defaultOperationOpened) === true) {
+          return current;
+        }
+
+        const nextOverrides = new Map(overrides);
+        nextOverrides.set(pathId, true);
+        return { spec, overrides: nextOverrides };
+      });
+    },
+    [defaultOperationOpened, spec],
+  );
+
+  const operationOverrides =
+    operationExpansion.spec === spec
+      ? operationExpansion.overrides
+      : EMPTY_OPERATION_OVERRIDES;
 
   // Loading state
   if (loading) {
@@ -136,7 +200,7 @@ export function ApiDocumentation({
         className={styles.apiNavigation}
         display={{ base: "none", md: "flex" }}
       >
-        <ApiNavigation spec={spec} />
+        <ApiNavigation spec={spec} onNavigate={handleNavigate} />
       </Box>
 
       <ScrollArea
@@ -147,7 +211,12 @@ export function ApiDocumentation({
           <Stack gap="xl">
             <ApiHeader info={spec.info} servers={spec.servers} />
 
-            <Tabs defaultValue="endpoints" variant="default">
+            <Tabs
+              value={activeTab}
+              onChange={setActiveTab}
+              variant="default"
+              keepMounted={false}
+            >
               <Tabs.List>
                 <Tabs.Tab
                   value="endpoints"
@@ -166,6 +235,20 @@ export function ApiDocumentation({
               {/* Endpoints Tab */}
               <Tabs.Panel value="endpoints" pt="xl">
                 <Stack gap="xl">
+                  {specSize?.isLarge && (
+                    <Alert
+                      icon={<IconAlertTriangle size={16} />}
+                      color="blue"
+                      title="Large specification mode"
+                    >
+                      <Text size="sm">
+                        Detected {specSize.operationCount} operations and{" "}
+                        {specSize.schemaCount} schemas. Operation details start
+                        collapsed and open on demand.
+                      </Text>
+                    </Alert>
+                  )}
+
                   {deprecatedCount > 0 && (
                     <Alert
                       icon={<IconAlertTriangle size={16} />}
@@ -206,28 +289,34 @@ export function ApiDocumentation({
                                   operation: Operation;
                                 },
                                 index: number,
-                              ) => (
-                                <Box
-                                  key={`${endpoint.path}-${endpoint.method}-${index}`}
-                                  opacity={
-                                    endpoint.operation.deprecated ? 0.7 : 1
-                                  }
-                                >
-                                  <OperationCard
-                                    path={endpoint.path}
-                                    method={endpoint.method}
-                                    operation={endpoint.operation}
-                                    spec={spec}
-                                    onTryIt={() =>
-                                      handleTryIt(
-                                        endpoint.path,
-                                        endpoint.method,
-                                        endpoint.operation,
-                                      )
+                              ) => {
+                                const pathId = getOperationPathId(
+                                  endpoint.path,
+                                  endpoint.method,
+                                );
+
+                                return (
+                                  <Box
+                                    key={`${endpoint.path}-${endpoint.method}-${index}`}
+                                    opacity={
+                                      endpoint.operation.deprecated ? 0.7 : 1
                                     }
-                                  />
-                                </Box>
-                              ),
+                                  >
+                                    <OperationCard
+                                      path={endpoint.path}
+                                      method={endpoint.method}
+                                      operation={endpoint.operation}
+                                      opened={
+                                        operationOverrides.get(pathId) ??
+                                        defaultOperationOpened
+                                      }
+                                      onToggle={handleOperationToggle}
+                                      spec={spec}
+                                      onTryIt={handleTryIt}
+                                    />
+                                  </Box>
+                                );
+                              },
                             )}
                           </Stack>
                         </Box>

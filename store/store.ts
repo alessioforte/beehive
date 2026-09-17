@@ -11,6 +11,7 @@ const initialState: State = {
   loading: false,
   theme: "system",
   openAPISpec: null,
+  openAPISpecSourceSize: 0,
   openAPILoading: false,
   openAPIError: null,
 };
@@ -27,7 +28,11 @@ export const store: StateCreator<State & Actions> = (set) => ({
 
   fetchOpenAPISpec: async (url: string) => {
     currentOpenAPIUrl = url;
-    set({ openAPILoading: true, openAPIError: null });
+    set({
+      openAPILoading: true,
+      openAPIError: null,
+      openAPISpecSourceSize: 0,
+    });
 
     try {
       const response = await fetch(url);
@@ -62,7 +67,11 @@ export const store: StateCreator<State & Actions> = (set) => ({
         data = convertSwagger2ToOpenAPI3(data);
       }
 
-      set({ openAPISpec: data, openAPILoading: false });
+      set({
+        openAPISpec: data,
+        openAPISpecSourceSize: text.length,
+        openAPILoading: false,
+      });
     } catch (err) {
       const errorMessage = getFetchErrorMessage(err);
       set({ openAPIError: errorMessage, openAPILoading: false });
@@ -111,7 +120,11 @@ export const store: StateCreator<State & Actions> = (set) => ({
         data = convertSwagger2ToOpenAPI3(data);
       }
 
-      set({ openAPISpec: data, openAPILoading: false });
+      set({
+        openAPISpec: data,
+        openAPISpecSourceSize: text.length,
+        openAPILoading: false,
+      });
     } catch (err) {
       const errorMessage = getFetchErrorMessage(err);
       set({ openAPIError: errorMessage, openAPILoading: false });

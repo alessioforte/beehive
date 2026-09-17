@@ -4,6 +4,7 @@ export interface State {
   loading: boolean;
   theme: "light" | "dark" | "system";
   openAPISpec: OpenAPISpec | null;
+  openAPISpecSourceSize: number;
   openAPILoading: boolean;
   openAPIError: string | null;
 }

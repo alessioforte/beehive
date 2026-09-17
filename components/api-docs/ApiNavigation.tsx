@@ -8,12 +8,14 @@ import {
   Divider,
   Group,
   ScrollArea,
+  TextInputProps,
 } from "@mantine/core";
 import { IconSearch, IconTag } from "@tabler/icons-react";
 import { useState, useMemo } from "react";
 import { OpenAPISpec } from "@/types/openapi";
-import { groupByTags } from "@/utils/openapi-helpers";
+import { getOperationPathId, groupByTags } from "@/utils/openapi-helpers";
 import { MethodBadge } from "./MethodBadge";
+import useDebounce from "@/hooks/use-debounce";
 import styles from "./styles.module.css";
 
 interface ApiNavigationProps {
@@ -68,43 +70,32 @@ export function ApiNavigation({ spec, onNavigate }: ApiNavigationProps) {
   }, [groupedEndpoints, searchQuery]);
 
   const handleEndpointClick = (path: string, method: string) => {
-    const pathId = `${method}-${path}`.replace(/[^a-zA-Z0-9]/g, "-");
-    const element = document.getElementById(pathId);
+    const pathId = getOperationPathId(path, method);
+    onNavigate?.(pathId);
 
-    if (element) {
-      // Find the scrollable container by ID
+    requestAnimationFrame(() => {
+      const element = document.getElementById(pathId);
+      if (!element) return;
+
       const scrollContainer = document.getElementById(
         "api-content-scroll-container",
       );
 
-      if (scrollContainer) {
-        // Calculate the element's position relative to the scroll container
-        const containerRect = scrollContainer.getBoundingClientRect();
-        const elementRect = element.getBoundingClientRect();
-
-        // Current scroll position + element position relative to container top
-        const targetScroll =
-          scrollContainer.scrollTop +
-          (elementRect.top - containerRect.top) -
-          15;
-
-        // Scroll to the calculated position
-        scrollContainer.scrollTo({
-          top: targetScroll,
-          behavior: "smooth",
-        });
-      } else {
-        // Fallback to default behavior
-        element.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
+      if (!scrollContainer) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
       }
-    }
 
-    if (onNavigate) {
-      onNavigate(pathId);
-    }
+      const containerRect = scrollContainer.getBoundingClientRect();
+      const elementRect = element.getBoundingClientRect();
+      const targetScroll =
+        scrollContainer.scrollTop + (elementRect.top - containerRect.top) - 15;
+
+      scrollContainer.scrollTo({
+        top: targetScroll,
+        behavior: "smooth",
+      });
+    });
   };
 
   return (
@@ -113,11 +104,10 @@ export function ApiNavigation({ spec, onNavigate }: ApiNavigationProps) {
         <Text size="lg" fw={700} mb="md">
           API Endpoints
         </Text>
-        <TextInput
+        <SearchInput
           placeholder="Search endpoints..."
           leftSection={<IconSearch size={16} />}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.currentTarget.value)}
+          onSearch={setSearchQuery}
           mb="md"
         />
       </Box>
@@ -202,3 +192,22 @@ export function ApiNavigation({ spec, onNavigate }: ApiNavigationProps) {
     </Box>
   );
 }
+
+interface SearchInputProps extends TextInputProps {
+  onSearch?: (query: string) => void;
+}
+
+const SearchInput = (props: SearchInputProps) => {
+  const { onSearch, ...rest } = props;
+  const { debounce: debouncedOnSearch } = useDebounce(
+    onSearch ?? (() => {}),
+    500,
+  );
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (rest.onChange) rest.onChange(e);
+    debouncedOnSearch(e.target.value);
+  };
+
+  return <TextInput {...rest} onChange={handleChange} />;
+};

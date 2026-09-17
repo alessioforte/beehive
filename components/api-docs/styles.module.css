@@ -36,6 +36,14 @@
   );
 }
 
+.operationChevron {
+  transition: transform 150ms ease;
+}
+
+.operationChevron[data-opened] {
+  transform: rotate(180deg);
+}
+
 .schemaCard {
   background-color: light-dark(var(--mantine-color-white), #1e1e1e);
 }

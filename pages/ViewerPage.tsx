@@ -14,6 +14,7 @@ export default function ViewerPage() {
 
   const {
     openAPISpec,
+    openAPISpecSourceSize,
     openAPILoading,
     openAPIError,
     fetchOpenAPISpec,
@@ -77,6 +78,7 @@ export default function ViewerPage() {
 
       <ApiDocumentation
         spec={openAPISpec}
+        specSourceSize={openAPISpecSourceSize}
         loading={openAPILoading}
         error={openAPIError}
         onRetry={refetchOpenAPISpec}

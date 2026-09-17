@@ -1,5 +1,59 @@
 import { Schema, OpenAPISpec, Operation } from "@/types/openapi";
 
+const HTTP_METHODS = [
+  "get",
+  "post",
+  "put",
+  "delete",
+  "patch",
+  "options",
+  "head",
+] as const;
+
+export const LARGE_SPEC_THRESHOLDS = {
+  sourceCharacters: 1_500_000,
+  operations: 150,
+  schemas: 250,
+} as const;
+
+export interface OpenAPISpecSize {
+  isLarge: boolean;
+  operationCount: number;
+  schemaCount: number;
+  sourceCharacters: number;
+}
+
+export function detectOpenAPISpecSize(
+  spec: OpenAPISpec,
+  sourceCharacters = 0,
+): OpenAPISpecSize {
+  const operationCount = Object.values(spec.paths).reduce(
+    (count, pathItem) =>
+      count +
+      HTTP_METHODS.filter(
+        (method) =>
+          (pathItem as unknown as Record<string, unknown>)[method] !==
+          undefined,
+      ).length,
+    0,
+  );
+  const schemaCount = Object.keys(spec.components?.schemas ?? {}).length;
+
+  return {
+    isLarge:
+      sourceCharacters >= LARGE_SPEC_THRESHOLDS.sourceCharacters ||
+      operationCount >= LARGE_SPEC_THRESHOLDS.operations ||
+      schemaCount >= LARGE_SPEC_THRESHOLDS.schemas,
+    operationCount,
+    schemaCount,
+    sourceCharacters,
+  };
+}
+
+export function getOperationPathId(path: string, method: string): string {
+  return `${method}-${path}`.replace(/[^a-zA-Z0-9]/g, "-");
+}
+
 export function getMethodColor(method: string): string {
   const colors: Record<string, string> = {
     get: "green",
@@ -141,17 +195,7 @@ export function groupByTags(
   >();
 
   Object.entries(paths).forEach(([path, pathItem]) => {
-    const methods = [
-      "get",
-      "post",
-      "put",
-      "delete",
-      "patch",
-      "options",
-      "head",
-    ];
-
-    methods.forEach((method) => {
+    HTTP_METHODS.forEach((method) => {
       const operation = pathItem[method] as Operation | undefined;
       if (operation) {
         const tags = operation.tags || ["Untagged"];
