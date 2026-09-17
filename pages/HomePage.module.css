@@ -1,0 +1,27 @@
+.page {
+  position: relative;
+  display: flex;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  padding: var(--mantine-spacing-xl);
+  background:
+    radial-gradient(
+      circle at 20% 20%,
+      rgba(250, 176, 5, 0.18),
+      transparent 28rem
+    ),
+    light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-8));
+}
+
+.themeToggle {
+  position: fixed;
+  bottom: var(--mantine-spacing-md);
+  left: var(--mantine-spacing-md);
+  z-index: 9;
+}
+
+.heroCard {
+  text-align: center;
+  box-shadow: var(--mantine-shadow-lg);
+}

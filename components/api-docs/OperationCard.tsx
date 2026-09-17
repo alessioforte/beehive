@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Card,
   Group,
@@ -59,7 +57,7 @@ export function OperationCard({
                   size="md"
                   fw={600}
                   style={{
-                    fontFamily: "var(--font-geist-mono)",
+                    fontFamily: "var(--app-font-mono)",
                     wordBreak: "break-all",
                   }}
                 >

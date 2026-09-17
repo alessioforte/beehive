@@ -1,15 +1,10 @@
 import { Container, Stack, Title, Text, Box } from "@mantine/core";
 import { IconFileCode } from "@tabler/icons-react";
+import styles from "./DocsLandingHeader.module.css";
 
-const Header = () => {
+const DocsLandingHeader = () => {
   return (
-    <Box
-      style={{
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        color: "white",
-      }}
-      py="xl"
-    >
+    <Box className={styles.header} py="xl">
       <Container size="lg">
         <Stack gap="md" align="center">
           <IconFileCode size={48} stroke={1.5} />
@@ -26,4 +21,4 @@ const Header = () => {
   );
 };
 
-export default Header;
+export default DocsLandingHeader;

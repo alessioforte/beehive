@@ -1,5 +1,3 @@
-"use client";
-
 import { Group, Table, Badge, Text, Code, Stack, Box } from "@mantine/core";
 import { Parameter, OpenAPISpec } from "@/types/openapi";
 import { getSchemaType } from "@/utils/openapi-helpers";

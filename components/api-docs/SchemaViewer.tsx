@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Box,
   Divider,
@@ -274,7 +272,7 @@ export function SchemaViewer({
           expanded={expanded}
           onToggle={() => setExpanded(!expanded)}
         />
-        <Collapse in={expanded}>
+        <Collapse expanded={expanded}>
           <Stack gap="xs" mt="xs">
             {schema.properties &&
               Object.entries(schema.properties).map(
@@ -420,7 +418,7 @@ const FieldArrayViewerResolved = ({
         )}
       </Group>
       {!isPrimitiveType(itemsSchema.type) && (
-        <Collapse in={expanded}>
+        <Collapse expanded={expanded}>
           <Stack gap="xs" mt="xs">
             {itemsSchema.properties &&
               Object.entries(itemsSchema.properties).map(
@@ -516,7 +514,7 @@ const OneOfViewer = ({
           </Group>
         ))}
       </Group>
-      <Collapse in={expanded}>
+      <Collapse expanded={expanded}>
         {selectedSchema.properties && (
           <Stack gap="xs" mt="xs">
             {Object.entries(selectedSchema.properties).map(
@@ -566,7 +564,7 @@ const AnyOfViewer = ({
         expanded={expanded}
         onToggle={() => setExpanded(!expanded)}
       />
-      <Collapse in={expanded}>
+      <Collapse expanded={expanded}>
         <Stack gap="md" mt="xs">
           <Text size="xs" c="dimmed">
             Any of the following:
@@ -619,7 +617,7 @@ const AllOfViewer = ({
   if (hasCompositions) {
     return (
       <Box pl={indent}>
-        <Collapse in={expanded}>
+        <Collapse expanded={expanded}>
           <Stack gap="sm" mt="xs">
             <Text size="xs" c="dimmed">
               All of the following (combined):
@@ -655,7 +653,7 @@ const AllOfViewer = ({
         expanded={expanded}
         onToggle={() => setExpanded(!expanded)}
       />
-      <Collapse in={expanded}>
+      <Collapse expanded={expanded}>
         <Stack gap="xs" mt="xs">
           {merged.properties &&
             Object.entries(merged.properties).map(([propName, propSchema]) => {

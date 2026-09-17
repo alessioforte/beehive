@@ -1,7 +1,5 @@
-"use client";
-
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router";
 import {
   Container,
   TextInput,
@@ -13,16 +11,17 @@ import {
   Box,
 } from "@mantine/core";
 import { IconSearch, IconFileCode } from "@tabler/icons-react";
-import Header from "./header";
+import DocsLandingHeader from "@/components/api-docs/DocsLandingHeader";
+import styles from "./ApiDocsPage.module.css";
 
 export default function ApiDocsPage() {
   const [specUrl, setSpecUrl] = useState("");
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const handleLoadSpec = () => {
     if (specUrl.trim()) {
       const encodedUrl = encodeURIComponent(specUrl.trim());
-      router.push(`/api-docs/viewer?url=${encodedUrl}`);
+      navigate(`/api-docs/viewer?url=${encodedUrl}`);
     }
   };
 
@@ -34,22 +33,20 @@ export default function ApiDocsPage() {
 
   const loadExample = (url: string) => {
     const encodedUrl = encodeURIComponent(url);
-    router.push(`/api-docs/viewer?url=${encodedUrl}`);
+    navigate(`/api-docs/viewer?url=${encodedUrl}`);
   };
 
   return (
-    <Box>
-      {/* Header Section */}
-      <Header />
+    <Box className={styles.page}>
+      <DocsLandingHeader />
 
-      {/* URL Input Section */}
       <Container size="lg" py="xl">
         <Paper shadow="md" p="xl" radius="md" withBorder>
           <Stack gap="md">
             <Text fw={600} size="lg">
               Load OpenAPI Specification
             </Text>
-            <Group align="flex-end" grow>
+            <Group align="flex-end" grow className={styles.loadControls}>
               <TextInput
                 label="OpenAPI Spec URL"
                 placeholder="https://api.example.com/openapi.json"
@@ -69,7 +66,6 @@ export default function ApiDocsPage() {
               </Button>
             </Group>
 
-            {/* Example URLs */}
             <Box>
               <Text size="sm" fw={500} mb="xs" c="dimmed">
                 Try these examples:

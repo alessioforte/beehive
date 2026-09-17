@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Container,
   Title,
@@ -13,26 +11,20 @@ import {
 import ColorSchemeToggle from "@/components/colorscheme-toggle";
 import { IconBook, IconRocket, IconCode } from "@tabler/icons-react";
 import useStore from "@/store";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router";
+import styles from "./HomePage.module.css";
 
-export default function Home() {
-  const router = useRouter();
+export default function HomePage() {
+  const navigate = useNavigate();
   const { theme, setTheme } = useStore();
 
   return (
-    <Box
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <Box style={{ position: "absolute", bottom: 10, left: 10, zIndex: 9 }}>
+    <Box className={styles.page}>
+      <Box className={styles.themeToggle}>
         <ColorSchemeToggle theme={theme} onClick={setTheme} />
       </Box>
       <Container size="md">
-        <Paper p="xl" radius="lg" style={{ textAlign: "center" }}>
+        <Paper p="xl" radius="lg" className={styles.heroCard} withBorder>
           <Stack gap="xl" align="center">
             <Box>
               <IconRocket size={80} stroke={1.5} color="orange" />
@@ -52,7 +44,7 @@ export default function Home() {
                 size="lg"
                 variant="gradient"
                 leftSection={<IconBook size={20} />}
-                onClick={() => router.push("/api-docs")}
+                onClick={() => navigate("/api-docs")}
                 gradient={{ from: "orange", to: "yellow" }}
               >
                 View API Docs
@@ -70,7 +62,7 @@ export default function Home() {
 
             <Box mt="xl">
               <Text size="sm" c="dimmed">
-                Built with Next.js, React, TypeScript, and Mantine UI
+                Built with Vite, React, TypeScript, and Mantine UI
               </Text>
             </Box>
           </Stack>
