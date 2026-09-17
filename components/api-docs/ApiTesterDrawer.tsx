@@ -1,6 +1,4 @@
-"use client";
-
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import {
   Drawer,
   Stack,
@@ -44,7 +42,14 @@ export function ApiTesterDrawer({
   const [queryParams, setQueryParams] = useState<Record<string, string>>({});
   const [headerParams, setHeaderParams] = useState<Record<string, string>>({});
   const [authHeader, setAuthHeader] = useState("");
-  const [requestBody, setRequestBody] = useState("");
+  const [requestBody, setRequestBody] = useState(() => {
+    const jsonContent = operation.requestBody?.content?.["application/json"];
+
+    if (!jsonContent?.schema) return "";
+    if (jsonContent.example) return formatJson(jsonContent.example);
+
+    return formatJson(extractSchemaExample(jsonContent.schema, spec));
+  });
   const [response, setResponse] = useState<ResponseState | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -59,35 +64,6 @@ export function ApiTesterDrawer({
     () => operation.parameters?.filter((p) => p.in === "header") || [],
     [operation.parameters],
   );
-
-  const initialRequestBody = useMemo(() => {
-    if (!operation.requestBody?.content) return "";
-    const jsonContent = operation.requestBody.content["application/json"];
-    if (!jsonContent?.schema) return "";
-
-    if (jsonContent.example) {
-      return formatJson(jsonContent.example);
-    }
-
-    const example = extractSchemaExample(jsonContent.schema, spec);
-    return formatJson(example);
-  }, [operation.requestBody, spec]);
-
-  const handleOpen = useCallback(() => {
-    setRequestBody(initialRequestBody);
-    setPathParams({});
-    setQueryParams({});
-    setHeaderParams({});
-    setAuthHeader("");
-    setResponse(null);
-    setSelectedServer(servers?.[0]?.url || "");
-  }, [initialRequestBody, servers]);
-
-  useMemo(() => {
-    if (opened) {
-      handleOpen();
-    }
-  }, [opened, handleOpen]);
 
   const serverOptions = useMemo(
     () =>
@@ -136,18 +112,18 @@ export function ApiTesterDrawer({
 
       setResponse(result);
     } catch (error) {
+      const message =
+        error instanceof TypeError
+          ? "The browser could not reach this API. Check that the URL is correct and that the API allows cross-origin (CORS) requests."
+          : error instanceof Error
+            ? error.message
+            : "Unknown error occurred";
+
       setResponse({
         status: 0,
-        statusText: "Error",
+        statusText: "Client request failed",
         headers: {},
-        body: JSON.stringify(
-          {
-            error:
-              error instanceof Error ? error.message : "Unknown error occurred",
-          },
-          null,
-          2,
-        ),
+        body: JSON.stringify({ error: message }, null, 2),
         timing: 0,
       });
     } finally {
@@ -176,11 +152,7 @@ export function ApiTesterDrawer({
       title={
         <Group gap="sm">
           <MethodBadge method={method} size="md" />
-          <Text
-            size="sm"
-            fw={600}
-            style={{ fontFamily: "var(--font-geist-mono)" }}
-          >
+          <Text size="sm" fw={600} ff="monospace">
             {path}
           </Text>
         </Group>
@@ -356,7 +328,7 @@ export function ApiTesterDrawer({
                               <Text
                                 size="xs"
                                 style={{
-                                  fontFamily: "var(--font-geist-mono)",
+                                  fontFamily: "var(--app-font-mono)",
                                   wordBreak: "break-all",
                                 }}
                               >

@@ -1,5 +1,3 @@
-"use client";
-
 import { Badge } from "@mantine/core";
 import { getStatusCodeColor } from "@/utils/openapi-helpers";
 

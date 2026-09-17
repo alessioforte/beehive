@@ -1,0 +1,8 @@
+.header {
+  color: var(--mantine-color-white);
+  background: linear-gradient(
+    135deg,
+    var(--mantine-color-indigo-6),
+    var(--mantine-color-grape-7)
+  );
+}

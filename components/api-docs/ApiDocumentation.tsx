@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Box,
   Card,
@@ -52,8 +50,7 @@ export function ApiDocumentation({
     Object.values(spec.paths).forEach((pathItem) => {
       ["get", "post", "put", "delete", "patch"].forEach((method) => {
         const operation = pathItem[method as keyof typeof pathItem] as
-          | Operation
-          | undefined;
+          Operation | undefined;
         if (operation?.deprecated) {
           count++;
         }
@@ -294,17 +291,20 @@ export function ApiDocumentation({
         </Container>
       </ScrollArea>
 
-      {selectedEndpoint && spec.servers && spec.servers.length > 0 && (
-        <ApiTesterDrawer
-          opened={drawerOpened}
-          onClose={handleCloseDrawer}
-          path={selectedEndpoint.path}
-          method={selectedEndpoint.method}
-          operation={selectedEndpoint.operation}
-          spec={spec}
-          servers={spec.servers}
-        />
-      )}
+      {drawerOpened &&
+        selectedEndpoint &&
+        spec.servers &&
+        spec.servers.length > 0 && (
+          <ApiTesterDrawer
+            opened={drawerOpened}
+            onClose={handleCloseDrawer}
+            path={selectedEndpoint.path}
+            method={selectedEndpoint.method}
+            operation={selectedEndpoint.operation}
+            spec={spec}
+            servers={spec.servers}
+          />
+        )}
     </Box>
   );
 }

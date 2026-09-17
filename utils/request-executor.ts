@@ -1,4 +1,4 @@
-import { ProxyRequestBody, ProxyResponse } from "@/types/api-tester";
+import { ApiRequest, ResponseState } from "@/types/api-tester";
 
 export function buildRequestUrl(
   baseUrl: string,
@@ -6,11 +6,6 @@ export function buildRequestUrl(
   pathParams: Record<string, string>,
   queryParams: Record<string, string>,
 ): string {
-  console.log("baseUrl", baseUrl);
-  console.log("path", path);
-  console.log("pathParams", pathParams);
-  console.log("queryParams", queryParams);
-
   let url = path;
 
   Object.entries(pathParams).forEach(([key, value]) => {
@@ -19,7 +14,8 @@ export function buildRequestUrl(
     }
   });
 
-  const fullUrl = new URL(`${baseUrl}${url}`);
+  const normalizedBaseUrl = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
+  const fullUrl = new URL(url.replace(/^\//, ""), normalizedBaseUrl);
 
   Object.entries(queryParams).forEach(([key, value]) => {
     if (value) {
@@ -31,21 +27,41 @@ export function buildRequestUrl(
 }
 
 export async function executeRequest(
-  request: ProxyRequestBody,
-): Promise<ProxyResponse> {
-  const response = await fetch("/api/proxy", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(request),
-  });
+  request: ApiRequest,
+): Promise<ResponseState> {
+  const startedAt = performance.now();
+  const method = request.method.toUpperCase();
+  const requestInit: RequestInit = {
+    method,
+    headers: request.headers,
+  };
 
-  if (!response.ok) {
-    throw new Error(`Proxy request failed: ${response.statusText}`);
+  if (request.body && method !== "GET" && method !== "HEAD") {
+    requestInit.body = request.body;
   }
 
-  return response.json();
+  const response = await fetch(request.url, requestInit);
+  const responseText = await response.text();
+  const contentType = response.headers.get("content-type") ?? "";
+  let body = responseText;
+
+  if (contentType.includes("json") && responseText) {
+    try {
+      body = JSON.stringify(JSON.parse(responseText), null, 2);
+    } catch {
+      // Keep malformed JSON visible exactly as the API returned it.
+    }
+  }
+
+  const headers = Object.fromEntries(response.headers.entries());
+
+  return {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+    body,
+    timing: Math.round(performance.now() - startedAt),
+  };
 }
 
 export function extractPathParams(path: string): string[] {

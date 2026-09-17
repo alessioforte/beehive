@@ -1,5 +1,3 @@
-"use client";
-
 import { Box, Text, Stack, Code, Tabs, SegmentedControl } from "@mantine/core";
 import { useState } from "react";
 import { RequestBody, OpenAPISpec, Schema } from "@/types/openapi";

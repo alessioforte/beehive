@@ -1,5 +1,3 @@
-"use client";
-
 import { Box, Text, Stack, Accordion, Group, Code } from "@mantine/core";
 import {
   Responses,
@@ -9,7 +7,6 @@ import {
 } from "@/types/openapi";
 import { StatusCodeBadge } from "./StatusCodeBadge";
 import { SchemaViewer } from "./SchemaViewer";
-import styles from "./styles.module.css";
 
 interface ResponsesSectionProps {
   responses: Responses;

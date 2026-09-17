@@ -1,17 +1,15 @@
-"use client";
-
-import { Suspense, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { Box, ActionIcon, Tooltip, Group, Text, Loader } from "@mantine/core";
+import { useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router";
+import { Box, ActionIcon, Tooltip, Group, Text } from "@mantine/core";
 import { IconArrowLeft, IconExternalLink } from "@tabler/icons-react";
 import { ApiDocumentation } from "@/components/api-docs";
 import ColortSchemeToggle from "@/components/colorscheme-toggle";
 import useStore from "@/store";
-import styles from "./page.module.css";
+import styles from "./ViewerPage.module.css";
 
-function ViewerContent() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
+export default function ViewerPage() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const specUrl = searchParams.get("url") || "";
 
   const {
@@ -39,7 +37,7 @@ function ViewerContent() {
               <ActionIcon
                 variant="subtle"
                 size="lg"
-                onClick={() => router.push("/api-docs")}
+                onClick={() => navigate("/api-docs")}
               >
                 <IconArrowLeft size={20} />
               </ActionIcon>
@@ -52,7 +50,7 @@ function ViewerContent() {
                   {openAPISpec.info.title}
                 </Text>
                 <Text size="xs" c="dimmed" truncate>
-                  {decodeURIComponent(specUrl)}
+                  {specUrl}
                 </Text>
               </Box>
             )}
@@ -84,19 +82,5 @@ function ViewerContent() {
         onRetry={refetchOpenAPISpec}
       />
     </Box>
-  );
-}
-
-export default function ViewerPage() {
-  return (
-    <Suspense
-      fallback={
-        <Box className={styles.loaderContainer}>
-          <Loader size="xl" />
-        </Box>
-      }
-    >
-      <ViewerContent />
-    </Suspense>
   );
 }

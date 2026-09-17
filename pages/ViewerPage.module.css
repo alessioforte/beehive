@@ -15,10 +15,3 @@
   height: 60px;
   flex-shrink: 0;
 }
-
-.loaderContainer {
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}

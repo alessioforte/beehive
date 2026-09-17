@@ -64,8 +64,7 @@ export const store: StateCreator<State & Actions> = (set) => ({
 
       set({ openAPISpec: data, openAPILoading: false });
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Unknown error occurred";
+      const errorMessage = getFetchErrorMessage(err);
       set({ openAPIError: errorMessage, openAPILoading: false });
       console.error("Error fetching OpenAPI spec:", err);
     }
@@ -114,12 +113,19 @@ export const store: StateCreator<State & Actions> = (set) => ({
 
       set({ openAPISpec: data, openAPILoading: false });
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Unknown error occurred";
+      const errorMessage = getFetchErrorMessage(err);
       set({ openAPIError: errorMessage, openAPILoading: false });
       console.error("Error fetching OpenAPI spec:", err);
     }
   },
 });
+
+function getFetchErrorMessage(error: unknown): string {
+  if (error instanceof TypeError) {
+    return "The browser could not load this specification. Check that the URL is correct and that its server allows cross-origin (CORS) requests.";
+  }
+
+  return error instanceof Error ? error.message : "Unknown error occurred";
+}
 
 export default create(devtools(store, { name: "store", store: "main" }));
