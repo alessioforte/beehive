@@ -105,7 +105,7 @@ export default function ApiDocsPage() {
                   variant="light"
                   onClick={() =>
                     loadExample(
-                      "https://api.apis.guru/v2/specs/stripe.com/2020-08-27/openapi.yaml",
+                      "https://raw.githubusercontent.com/stripe/openapi/refs/heads/master/openapi/spec3.yaml",
                     )
                   }
                 >

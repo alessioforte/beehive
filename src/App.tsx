@@ -4,7 +4,6 @@ import { Navigate, Route, Routes } from "react-router";
 import HomePage from "@/pages/HomePage";
 
 const ApiDocsPage = lazy(() => import("@/pages/ApiDocsPage"));
-const TestPage = lazy(() => import("@/pages/TestPage"));
 const ViewerPage = lazy(() => import("@/pages/ViewerPage"));
 
 export default function App() {
@@ -20,7 +19,6 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/api-docs" element={<ApiDocsPage />} />
         <Route path="/api-docs/viewer" element={<ViewerPage />} />
-        <Route path="/api-docs/test" element={<TestPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
