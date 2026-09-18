@@ -1,9 +1,11 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { Box, ActionIcon, Tooltip, Group, Text } from "@mantine/core";
 import { IconArrowLeft, IconExternalLink } from "@tabler/icons-react";
 import { ApiDocumentation } from "@/components/api-docs";
 import ColortSchemeToggle from "@/components/colorscheme-toggle";
+import { useOptionalAuth } from "@/lib/auth";
+import { canSendAccessTokenTo } from "@/src/config";
 import useStore from "@/store";
 import styles from "./ViewerPage.module.css";
 
@@ -11,6 +13,8 @@ export default function ViewerPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const specUrl = searchParams.get("url") || "";
+  const cameFromCatalog = searchParams.get("from") === "catalog";
+  const getAccessToken = useOptionalAuth()?.getAccessToken;
 
   const {
     openAPISpec,
@@ -18,27 +22,38 @@ export default function ViewerPage() {
     openAPILoading,
     openAPIError,
     fetchOpenAPISpec,
-    refetchOpenAPISpec,
     theme,
     setTheme,
   } = useStore();
 
+  const loadSpec = useCallback(async () => {
+    if (!specUrl) return;
+
+    const accessToken =
+      getAccessToken && canSendAccessTokenTo(specUrl)
+        ? await getAccessToken()
+        : null;
+
+    await fetchOpenAPISpec(specUrl, accessToken ? { accessToken } : undefined);
+  }, [fetchOpenAPISpec, getAccessToken, specUrl]);
+
   useEffect(() => {
-    if (specUrl) {
-      fetchOpenAPISpec(specUrl);
-    }
-  }, [specUrl, fetchOpenAPISpec]);
+    void loadSpec();
+  }, [loadSpec]);
 
   return (
     <Box className={styles.viewerContainer}>
       <Box className={styles.header}>
         <Group justify="space-between" wrap="nowrap">
           <Group gap="md" wrap="nowrap">
-            <Tooltip label="Back to selection" withArrow>
+            <Tooltip
+              label={cameFromCatalog ? "Back to catalog" : "Back to selection"}
+              withArrow
+            >
               <ActionIcon
                 variant="subtle"
                 size="lg"
-                onClick={() => navigate("/api-docs")}
+                onClick={() => navigate(cameFromCatalog ? "/" : "/api-docs")}
               >
                 <IconArrowLeft size={20} />
               </ActionIcon>
@@ -81,7 +96,7 @@ export default function ViewerPage() {
         specSourceSize={openAPISpecSourceSize}
         loading={openAPILoading}
         error={openAPIError}
-        onRetry={refetchOpenAPISpec}
+        onRetry={loadSpec}
       />
     </Box>
   );

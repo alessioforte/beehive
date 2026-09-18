@@ -1,5 +1,9 @@
 import { OpenAPISpec } from "@/types/openapi";
 
+export interface FetchOpenAPISpecOptions {
+  accessToken?: string;
+}
+
 export interface State {
   loading: boolean;
   theme: "light" | "dark" | "system";
@@ -11,7 +15,10 @@ export interface State {
 
 export interface Actions {
   setTheme: (theme: "light" | "dark" | "system") => void;
-  fetchOpenAPISpec: (url: string) => Promise<void>;
+  fetchOpenAPISpec: (
+    url: string,
+    options?: FetchOpenAPISpecOptions,
+  ) => Promise<void>;
   refetchOpenAPISpec: () => Promise<void>;
   setOpenAPISpecUrl: (url: string) => void;
 }

@@ -1,5 +1,5 @@
 export { AuthProvider } from "./AuthProvider";
-export { useAuth } from "./auth-context";
+export { useAuth, useOptionalAuth } from "./auth-context";
 export type { AuthContextValue } from "./auth-context";
 export { createOAuthClient, OAuthClient } from "./oauth-client";
 export { RequireAuth } from "./RequireAuth";

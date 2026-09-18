@@ -7,6 +7,8 @@ interface ImportMetaEnv {
   readonly VITE_AUTH_URL?: string;
   readonly VITE_OAUTH_CLIENT_ID?: string;
   readonly VITE_OAUTH_REDIRECT_URI?: string;
+  readonly VITE_OPENAPI_CATALOG_URL?: string;
+  readonly VITE_OPENAPI_AUTHORIZED_ORIGINS?: string;
 }
 
 interface ImportMeta {

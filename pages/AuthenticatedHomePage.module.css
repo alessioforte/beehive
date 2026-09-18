@@ -1,0 +1,71 @@
+.page {
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      circle at 85% 0%,
+      rgba(250, 176, 5, 0.12),
+      transparent 28rem
+    ),
+    light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-8));
+}
+
+.header {
+  border-bottom: 1px solid
+    light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-5));
+  background: light-dark(rgba(255, 255, 255, 0.82), rgba(26, 27, 30, 0.82));
+  backdrop-filter: blur(0.75rem);
+}
+
+.catalogGrid {
+  align-items: stretch;
+}
+
+.catalogCard {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  overflow: hidden;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: var(--mantine-radius-lg);
+}
+
+.catalogCard:focus-visible {
+  outline: 2px solid var(--mantine-color-orange-6);
+  outline-offset: 3px;
+}
+
+.cardPaper {
+  display: flex;
+  height: 100%;
+  min-height: 17rem;
+  flex-direction: column;
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.catalogCard:hover .cardPaper {
+  border-color: var(--mantine-color-orange-5);
+  box-shadow: var(--mantine-shadow-md);
+  /*transform: translateY(-2px);*/
+}
+
+.description {
+  flex: 1;
+  white-space: pre-line;
+}
+
+.specUrl {
+  min-width: 0;
+  flex: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cardPaper {
+    transition: none;
+  }
+}

@@ -1,7 +1,7 @@
 import { create, StateCreator } from "zustand";
 import { devtools } from "zustand/middleware";
 import { load as loadYaml } from "js-yaml";
-import { State, Actions } from "./types";
+import { State, Actions, FetchOpenAPISpecOptions } from "./types";
 import {
   isSwagger2,
   convertSwagger2ToOpenAPI3,
@@ -16,18 +16,60 @@ const initialState: State = {
   openAPIError: null,
 };
 
-let currentOpenAPIUrl: string = "";
+interface OpenAPIRequest {
+  url: string;
+  options?: FetchOpenAPISpecOptions;
+}
+
+let currentOpenAPIRequest: OpenAPIRequest | null = null;
+
+async function loadOpenAPISpec(url: string, options?: FetchOpenAPISpecOptions) {
+  const response = await fetch(url, {
+    headers: options?.accessToken
+      ? { Authorization: `Bearer ${options.accessToken}` }
+      : undefined,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch OpenAPI spec: ${response.statusText}`);
+  }
+
+  const contentType = response.headers.get("content-type") || "";
+  const text = await response.text();
+
+  let data;
+  if (
+    contentType.includes("yaml") ||
+    contentType.includes("yml") ||
+    url.endsWith(".yaml") ||
+    url.endsWith(".yml")
+  ) {
+    data = loadYaml(text);
+  } else {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = loadYaml(text);
+    }
+  }
+
+  if (isSwagger2(data)) {
+    data = convertSwagger2ToOpenAPI3(data);
+  }
+
+  return { data, sourceSize: text.length };
+}
 
 export const store: StateCreator<State & Actions> = (set) => ({
   ...initialState,
   setTheme: (theme) => set(() => ({ theme })),
 
   setOpenAPISpecUrl: (url: string) => {
-    currentOpenAPIUrl = url;
+    currentOpenAPIRequest = { url };
   },
 
-  fetchOpenAPISpec: async (url: string) => {
-    currentOpenAPIUrl = url;
+  fetchOpenAPISpec: async (url: string, options?: FetchOpenAPISpecOptions) => {
+    currentOpenAPIRequest = { url, options };
     set({
       openAPILoading: true,
       openAPIError: null,
@@ -35,41 +77,11 @@ export const store: StateCreator<State & Actions> = (set) => ({
     });
 
     try {
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch OpenAPI spec: ${response.statusText}`);
-      }
-
-      const contentType = response.headers.get("content-type") || "";
-      const text = await response.text();
-
-      let data;
-      // Check if it's YAML based on content type or URL extension
-      if (
-        contentType.includes("yaml") ||
-        contentType.includes("yml") ||
-        url.endsWith(".yaml") ||
-        url.endsWith(".yml")
-      ) {
-        data = loadYaml(text);
-      } else {
-        // Try to parse as JSON, fallback to YAML if it fails
-        try {
-          data = JSON.parse(text);
-        } catch {
-          data = loadYaml(text);
-        }
-      }
-
-      // Convert Swagger 2.0 specs to OpenAPI 3.0 so rendering components work
-      if (isSwagger2(data)) {
-        data = convertSwagger2ToOpenAPI3(data);
-      }
+      const { data, sourceSize } = await loadOpenAPISpec(url, options);
 
       set({
         openAPISpec: data,
-        openAPISpecSourceSize: text.length,
+        openAPISpecSourceSize: sourceSize,
         openAPILoading: false,
       });
     } catch (err) {
@@ -80,7 +92,7 @@ export const store: StateCreator<State & Actions> = (set) => ({
   },
 
   refetchOpenAPISpec: async () => {
-    if (!currentOpenAPIUrl) {
+    if (!currentOpenAPIRequest) {
       console.warn("No OpenAPI URL set for refetch");
       return;
     }
@@ -88,41 +100,14 @@ export const store: StateCreator<State & Actions> = (set) => ({
     set({ openAPILoading: true, openAPIError: null });
 
     try {
-      const response = await fetch(currentOpenAPIUrl);
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch OpenAPI spec: ${response.statusText}`);
-      }
-
-      const contentType = response.headers.get("content-type") || "";
-      const text = await response.text();
-
-      let data;
-      // Check if it's YAML based on content type or URL extension
-      if (
-        contentType.includes("yaml") ||
-        contentType.includes("yml") ||
-        currentOpenAPIUrl.endsWith(".yaml") ||
-        currentOpenAPIUrl.endsWith(".yml")
-      ) {
-        data = loadYaml(text);
-      } else {
-        // Try to parse as JSON, fallback to YAML if it fails
-        try {
-          data = JSON.parse(text);
-        } catch {
-          data = loadYaml(text);
-        }
-      }
-
-      // Convert Swagger 2.0 specs to OpenAPI 3.0 so rendering components work
-      if (isSwagger2(data)) {
-        data = convertSwagger2ToOpenAPI3(data);
-      }
+      const { data, sourceSize } = await loadOpenAPISpec(
+        currentOpenAPIRequest.url,
+        currentOpenAPIRequest.options,
+      );
 
       set({
         openAPISpec: data,
-        openAPISpecSourceSize: text.length,
+        openAPISpecSourceSize: sourceSize,
         openAPILoading: false,
       });
     } catch (err) {

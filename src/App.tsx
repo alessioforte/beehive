@@ -3,12 +3,14 @@ import { Center, Loader } from "@mantine/core";
 import { Navigate, Route, Routes } from "react-router";
 import { AuthProvider, RequireAuth } from "@/lib/auth";
 import HomePage from "@/pages/HomePage";
-import AuthCallbackPage from "@/pages/AuthCallbackPage";
-import AuthenticatedHomePage from "@/pages/AuthenticatedHomePage";
 import { createAppOAuthClient, isAuthenticationEnabled } from "./auth";
 
 const ApiDocsPage = lazy(() => import("@/pages/ApiDocsPage"));
 const ViewerPage = lazy(() => import("@/pages/ViewerPage"));
+const AuthCallbackPage = lazy(() => import("@/pages/AuthCallbackPage"));
+const AuthenticatedHomePage = lazy(
+  () => import("@/pages/AuthenticatedHomePage"),
+);
 const authenticationEnabled = isAuthenticationEnabled();
 
 function DefaultRoutes() {

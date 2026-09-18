@@ -51,6 +51,8 @@ VITE_API_URL=https://localhost:5050
 VITE_AUTH_URL=https://localhost:5050/auth
 VITE_OAUTH_CLIENT_ID=beehive
 VITE_OAUTH_REDIRECT_URI=http://localhost:3021/auth/callback
+VITE_OPENAPI_CATALOG_URL=https://localhost:5050/openapi/catalog
+VITE_OPENAPI_AUTHORIZED_ORIGINS=
 ```
 
 The enabled flow uses OAuth Authorization Code with PKCE. The OAuth client must
@@ -61,6 +63,32 @@ in this browser application.
 With authentication enabled, all application routes are protected. After the
 callback succeeds, `/` renders the blank authenticated home page. With the flag
 disabled, `/` continues to render the existing Beehive landing page.
+
+The catalog endpoint receives the OAuth access token as a Bearer token and can
+return either an array or an object with an `items` array. Each item uses this
+shape:
+
+```json
+{
+  "id": "payments",
+  "title": "Payments API",
+  "description": "Create and manage payments.",
+  "specUrl": "https://api.example.com/openapi.json",
+  "version": "2.4.0",
+  "specification": "OpenAPI 3.1",
+  "format": "json",
+  "owner": "Payments Platform",
+  "tags": ["public", "payments"],
+  "updatedAt": "2026-09-18T10:00:00Z"
+}
+```
+
+Only `id`, `title`, and `specUrl` are required. Relative specification URLs are
+resolved against the catalog endpoint. The viewer sends the OAuth Bearer token
+when the specification has the same origin as `VITE_API_URL` or
+`VITE_OPENAPI_CATALOG_URL`. For protected specifications on additional trusted
+origins, add a comma-separated allowlist to `VITE_OPENAPI_AUTHORIZED_ORIGINS`.
+Tokens are never sent to specification origins outside this allowlist.
 
 The reusable implementation lives in `lib/auth`. It accepts configuration
 rather than reading Vite variables directly; `src/auth.ts` is the small
