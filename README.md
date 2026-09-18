@@ -39,6 +39,33 @@ npm run dev
 
 Open [http://localhost:3021](http://localhost:3021).
 
+## Optional OAuth authentication
+
+Authentication is disabled by default, so the application behaves exactly as
+the public API documentation viewer. Enable it with the following Vite build
+variables:
+
+```text
+VITE_AUTH_ENABLED=true
+VITE_API_URL=https://localhost:5050
+VITE_AUTH_URL=https://localhost:5050/auth
+VITE_OAUTH_CLIENT_ID=beehive
+VITE_OAUTH_REDIRECT_URI=http://localhost:3021/auth/callback
+```
+
+The enabled flow uses OAuth Authorization Code with PKCE. The OAuth client must
+be a public client, must allow the exact redirect URI above, and must support
+the `authorization_code` and `refresh_token` grants. No client secret belongs
+in this browser application.
+
+With authentication enabled, all application routes are protected. After the
+callback succeeds, `/` renders the blank authenticated home page. With the flag
+disabled, `/` continues to render the existing Beehive landing page.
+
+The reusable implementation lives in `lib/auth`. It accepts configuration
+rather than reading Vite variables directly; `src/auth.ts` is the small
+Beehive-specific environment adapter.
+
 ## Scripts
 
 ```bash
@@ -52,12 +79,12 @@ npm run clean    # Remove the production build
 
 ## Routes
 
-| Route                    | Purpose                |
-| ------------------------ | ---------------------- |
-| `/`                      | Landing page           |
-| `/api-docs`              | Specification picker   |
-| `/api-docs/viewer?url=…` | Documentation viewer   |
-| `/api-docs/test`         | Local format test page |
+| Route                    | Purpose                                         |
+| ------------------------ | ----------------------------------------------- |
+| `/`                      | Landing page                                    |
+| `/auth/callback`         | OAuth callback (when authentication is enabled) |
+| `/api-docs`              | Specification picker                            |
+| `/api-docs/viewer?url=…` | Documentation viewer                            |
 
 The app uses React Router with browser history. In production, configure the host to serve `index.html` for unknown paths so direct navigation to these routes works.
 
