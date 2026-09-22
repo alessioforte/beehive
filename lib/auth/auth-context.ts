@@ -6,7 +6,7 @@ export interface AuthContextValue {
   error: string | null;
   tokens: OAuthTokenSet | null;
   checkSession: () => Promise<boolean>;
-  completeSignIn: (params: OAuthCallbackParams) => Promise<string>;
+  completeSignIn: (params: OAuthCallbackParams) => Promise<string | null>;
   getAccessToken: () => Promise<string | null>;
   signIn: (returnPath?: string) => Promise<void>;
   signOut: () => Promise<void>;

@@ -49,10 +49,13 @@ export interface OAuthCallbackParams {
   state: string | null;
 }
 
-export interface OAuthCallbackResult {
-  returnPath: string;
-  tokens: OAuthTokenSet;
-}
+export type OAuthCallbackResult =
+  | {
+      status: "authenticated";
+      returnPath: string;
+      tokens: OAuthTokenSet;
+    }
+  | { status: "redirecting" };
 
 export type AuthStatus =
   | "idle"

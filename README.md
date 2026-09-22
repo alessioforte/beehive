@@ -61,10 +61,13 @@ example, use `/beehive` when the application is served from
 `http://localhost:3021/beehive`. Include the same path in the registered OAuth
 redirect URI: `http://localhost:3021/beehive/auth/callback`.
 
-The enabled flow uses OAuth Authorization Code with PKCE. The OAuth client must
-be a public client, must allow the exact redirect URI above, and must support
-the `authorization_code` and `refresh_token` grants. No client secret belongs
-in this browser application.
+The enabled flow uses OAuth Authorization Code with PKCE. Sign-in starts at the
+authorization endpoint, which reuses an existing SSO session when available. If
+the endpoint returns `login_required`, the app opens the hosted login page and
+resumes with a fresh authorization request afterward. The OAuth client must be
+a public client, must allow the exact redirect URI above, and must support the
+`authorization_code` and `refresh_token` grants. No client secret belongs in
+this browser application.
 
 With authentication enabled, all application routes are protected. After the
 callback succeeds, `/` renders the blank authenticated home page. With the flag

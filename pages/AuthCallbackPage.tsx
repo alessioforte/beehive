@@ -26,7 +26,17 @@ export default function AuthCallbackPage() {
       state: searchParams.get("state"),
     })
       .then((returnPath) => {
-        if (!cancelled) navigate(returnPath, { replace: true });
+        if (cancelled) return;
+
+        if (returnPath) {
+          navigate(returnPath, { replace: true });
+          return;
+        }
+
+        setCallbackState({
+          status: "loading",
+          message: "Redirecting to sign in",
+        });
       })
       .catch((error: unknown) => {
         if (cancelled) return;

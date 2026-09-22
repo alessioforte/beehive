@@ -227,6 +227,18 @@ export class OAuthClient {
 
     try {
       const authorizeUrl = await this.buildAuthorizeUrl(returnPath);
+      window.location.assign(authorizeUrl);
+    } catch (error) {
+      this.redirecting = false;
+      throw error;
+    }
+  }
+
+  private async redirectToHostedLogin(returnPath: string) {
+    this.redirecting = true;
+
+    try {
+      const authorizeUrl = await this.buildAuthorizeUrl(returnPath);
       const loginUrl = new URL(
         joinUrl(this.config.authUrl, this.config.endpoints.hostedLogin),
       );
@@ -262,6 +274,11 @@ export class OAuthClient {
     }
 
     if (params.error) {
+      if (params.error === "login_required") {
+        await this.redirectToHostedLogin(request.returnPath);
+        return { status: "redirecting" };
+      }
+
       window.sessionStorage.removeItem(this.requestStorageKey);
       throw new OAuthFlowError(
         params.errorDescription ??
@@ -284,7 +301,11 @@ export class OAuthClient {
         request.codeVerifier,
       );
       window.sessionStorage.removeItem(this.requestStorageKey);
-      return { tokens, returnPath: request.returnPath };
+      return {
+        status: "authenticated",
+        tokens,
+        returnPath: request.returnPath,
+      };
     } catch (error) {
       this.clearSession();
       throw error;

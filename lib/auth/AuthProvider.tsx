@@ -56,6 +56,12 @@ export function AuthProvider({ client, children }: AuthProviderProps) {
 
       try {
         const result = await client.completeSignIn(params);
+
+        if (result.status === "redirecting") {
+          setStatus("redirecting");
+          return null;
+        }
+
         setTokens(result.tokens);
         setStatus("authenticated");
         return result.returnPath;
