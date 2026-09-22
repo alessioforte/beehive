@@ -46,6 +46,7 @@ the public API documentation viewer. Enable it with the following Vite build
 variables:
 
 ```text
+VITE_BASE_PATH=/
 VITE_AUTH_ENABLED=true
 VITE_API_URL=https://localhost:5050
 VITE_AUTH_URL=https://localhost:5050/auth
@@ -54,6 +55,11 @@ VITE_OAUTH_REDIRECT_URI=http://localhost:3021/auth/callback
 VITE_OPENAPI_CATALOG_URL=https://localhost:5050/openapi/catalog
 VITE_OPENAPI_AUTHORIZED_ORIGINS=
 ```
+
+Set `VITE_BASE_PATH` to the URL path where the application is mounted. For
+example, use `/beehive` when the application is served from
+`http://localhost:3021/beehive`. Include the same path in the registered OAuth
+redirect URI: `http://localhost:3021/beehive/auth/callback`.
 
 The enabled flow uses OAuth Authorization Code with PKCE. The OAuth client must
 be a public client, must allow the exact redirect URI above, and must support

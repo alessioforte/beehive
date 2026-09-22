@@ -25,6 +25,7 @@ export function isAuthenticationEnabled() {
 
 export function createAppOAuthClient() {
   const origin = window.location.origin;
+  const basePath = import.meta.env.BASE_URL.replace(/\/+$/, "");
 
   return createOAuthClient({
     apiUrl: cleanUrl(import.meta.env.VITE_API_URL) ?? origin,
@@ -35,7 +36,7 @@ export function createAppOAuthClient() {
     ),
     redirectUri:
       cleanUrl(import.meta.env.VITE_OAUTH_REDIRECT_URI) ??
-      `${origin}/auth/callback`,
+      `${origin}${basePath}/auth/callback`,
     storageKeyPrefix: "beehive.oauth",
   });
 }
