@@ -12,6 +12,39 @@ Beehive is a client-side OpenAPI and Swagger documentation viewer built with Vit
 - Send API requests directly from the browser
 - Switch between light and dark color schemes
 
+## Screenshots
+
+### API documentation
+
+Browse endpoints by tag and inspect parameters, response codes, and schemas alongside searchable navigation.
+
+![Beehive in light mode showing the Pet Store API, endpoint navigation, and GET /pets documentation](docs/screenshots/api-documentation.png)
+
+The viewer screenshots use the bundled [Pet Store specification](public/samples/petstore.yaml). To explore the same API locally, open `/api-docs`, enter `/samples/petstore.yaml`, and select **Load Specification**.
+
+<details>
+<summary>More screenshots: specification picker, request builder, and dark mode</summary>
+
+### Specification picker
+
+Load a JSON or YAML specification from a URL, or start with one of the example APIs.
+
+![Beehive specification picker with the OpenAPI URL field and example API buttons](docs/screenshots/specification-picker.png)
+
+### Request builder
+
+Open **Try It** on an endpoint to select a server, configure authorization, and edit the request body before sending a request.
+
+![Beehive request drawer for POST /pets with server selection, authorization, and a JSON request body](docs/screenshots/request-builder.png)
+
+### Schema explorer in dark mode
+
+Inspect model properties, required fields, types, enum values, and defaults in the **Schemas** tab.
+
+![Beehive in dark mode showing the Pet and NewPet models in the schema explorer](docs/screenshots/schemas-dark.png)
+
+</details>
+
 ## Client-only architecture
 
 Beehive does not include an API server or request proxy. Specifications and API requests are fetched directly by the browser.
@@ -131,6 +164,7 @@ The app uses React Router with browser history. In production, configure the hos
 beehive/
 ├── components/            # Shared UI and documentation components
 │   └── api-docs/          # Viewer, navigation, schemas, and API tester
+├── docs/screenshots/      # App screenshots used in this README
 ├── pages/                 # React Router route components and CSS modules
 ├── public/                # Bundled OpenAPI samples
 ├── src/
